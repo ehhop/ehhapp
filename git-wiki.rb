@@ -193,6 +193,7 @@ __END__
         %a{ :href => "/#{GitWiki.homepage}" } Home
       %li
         %a{ :href => "/pages" } All pages
+      %li Gah!
     #content= yield
 
 @@ show

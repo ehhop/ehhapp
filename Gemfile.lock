@@ -8,7 +8,8 @@ GEM
       posix-spawn (~> 0.3.6)
     haml (4.0.3)
       tilt
-    mime-types (1.24)
+    liquid (2.5.2)
+    mime-types (1.25)
     posix-spawn (0.3.6)
     rack (1.5.2)
     rack-protection (1.5.0)
@@ -26,6 +27,7 @@ PLATFORMS
 DEPENDENCIES
   grit
   haml
+  liquid
   rack
   rdiscount
   sinatra
