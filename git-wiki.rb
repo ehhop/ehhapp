@@ -76,6 +76,10 @@ module GitWiki
     end
 
     def to_html
+      # TODO: rip out YAML front matter
+      # wiki_link content and translate to HTML
+      # Apply appropriate post-translational modifications
+      # Load appropriate liquid template and insert content
       RDiscount.new(wiki_link(content)).to_html
     end
 
@@ -102,27 +106,27 @@ module GitWiki
     end
 
     private
-      def add_to_index_and_commit!
-        Dir.chdir(self.class.repository.working_dir) {
-          self.class.repository.add(@blob.name)
-        }
-        self.class.repository.commit_index(commit_message)
-      end
+    def add_to_index_and_commit!
+      Dir.chdir(self.class.repository.working_dir) {
+        self.class.repository.add(@blob.name)
+      }
+      self.class.repository.commit_index(commit_message)
+    end
 
-      def file_name
-        File.join(self.class.repository.working_dir, name + self.class.extension)
-      end
+    def file_name
+      File.join(self.class.repository.working_dir, name + self.class.extension)
+    end
 
-      def commit_message
-        new? ? "Created #{name}" : "Updated #{name}"
-      end
+    def commit_message
+      new? ? "Created #{name}" : "Updated #{name}"
+    end
 
-      def wiki_link(str)
-        str.gsub(/([A-Z][a-z]+[A-Z][A-Za-z0-9]+)/) { |page|
-          %Q{<a class="#{self.class.css_class_for(page)}"} +
-            %Q{href="/#{page}">#{page}</a>}
-        }
-      end
+    def wiki_link(str)
+      str.gsub(/([A-Z][a-z]+[A-Z][A-Za-z0-9]+)/) { |page|
+        %Q{<a class="#{self.class.css_class_for(page)}"} +
+          %Q{href="/#{page}">#{page}</a>}
+      }
+    end
   end
 
   class App < Sinatra::Base
