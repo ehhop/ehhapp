@@ -28,7 +28,7 @@ module GitWiki
   class Page
     def self.find_all
       return [] if repository.tree.contents.empty?
-      repository.tree.contents.collect { |blob| new(blob) }
+      repository.tree.contents.collect { |blob| new(blob).to_hash }
     end
 
     def self.find(name)
@@ -86,6 +86,14 @@ module GitWiki
     def to_s
       name
     end
+    
+    def to_hash
+      {
+        :name => name,
+        :content => content,
+        :to_html => to_html
+      }
+    end
 
     def new?
       @blob.id.nil?
@@ -131,9 +139,7 @@ module GitWiki
 
   class App < Sinatra::Base
     set :app_file, __FILE__
-    set :haml, { :format        => :html5,
-                 :attr_wrapper  => '"'     }
-    enable :inline_templates
+    set :views, settings.root + '/_layouts'
 
     error PageNotFound do
       page = request.env["sinatra.error"].name
@@ -150,17 +156,19 @@ module GitWiki
 
     get "/pages" do
       @pages = Page.find_all
-      haml :list
+      liquid :list, :locals => {:pages => @pages.map(&:to_hash)}
     end
 
     get "/:page/edit" do
       @page = Page.find_or_create(params[:page])
-      haml :edit
+      liquid :edit, :locals => {:page => @page.to_hash}
     end
 
     get "/:page" do
       @page = Page.find(params[:page])
-      haml :show
+      # TODO: change the template based on which template is specified 
+      # in the Page's YAML front matter
+      liquid :show, :locals => {:page => @page.to_hash}
     end
 
     post "/:page" do
@@ -169,58 +177,6 @@ module GitWiki
       redirect "/#{@page}"
     end
 
-    private
-      def title(title=nil)
-        @title = title.to_s unless title.nil?
-        @title
-      end
-
-      def list_item(page)
-        %Q{<a class="page_name" href="/#{page}">#{page.name}</a>}
-      end
   end
 end
 
-__END__
-@@ layout
-!!!
-%html
-  %head
-    %title= title
-  %body
-    %ul
-      %li
-        %a{ :href => "/#{GitWiki.homepage}" } Home
-      %li
-        %a{ :href => "/pages" } All pages
-      %li Really, the last time, this time.
-    #content= yield
-
-@@ show
-- title @page.name
-#edit
-  %a{:href => "/#{@page}/edit"} Edit this page
-%h1= title
-#content
-  ~"#{@page.to_html}"
-
-@@ edit
-- title "Editing #{@page.name}"
-%h1= title
-%form{:method => 'POST', :action => "/#{@page}"}
-  %p
-    %textarea{:name => 'body', :rows => 30, :style => "width: 100%"}= @page.content
-  %p
-    %input.submit{:type => :submit, :value => "Save as the newest version"}
-    or
-    %a.cancel{:href=>"/#{@page}"} cancel
-
-@@ list
-- title "Listing pages"
-%h1 All pages
-- if @pages.empty?
-  %p No pages found.
-- else
-  %ul#list
-    - @pages.each do |page|
-      %li= list_item(page)

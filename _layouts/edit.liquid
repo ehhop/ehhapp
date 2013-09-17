@@ -1,0 +1,11 @@
+<h1>{{ page.name }}</h1>
+<form method="POST" action="/{{ page.name }}">
+  <p>
+    <textarea name="body" rows="30" style="width: 100%">{{ page.content }}</textarea>
+  </p>
+  <p>
+    <input type="submit" value="Save as the newest version"/>
+    or
+    <a class="cancel" href="/{{ page.name }}">cancel</a>
+  </p>
+</form>

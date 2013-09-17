@@ -1,0 +1,10 @@
+<h1>All pages</h1>
+{% if pages == empty %}
+  <p>No pages found.</p>
+{% else %}
+<ul id="list">
+  {% for page in pages %}
+  <li><a href="/{{ page.name }}">{{ page.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
