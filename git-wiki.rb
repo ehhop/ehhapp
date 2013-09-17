@@ -156,7 +156,7 @@ module GitWiki
 
     get "/pages" do
       @pages = Page.find_all
-      liquid :list, :locals => {:pages => @pages.map(&:to_hash)}
+      liquid :list, :locals => {:pages => @pages.map(&:to_hash), :page => {"name" => "pages"}}
     end
 
     get "/:page/edit" do
