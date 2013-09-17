@@ -89,9 +89,9 @@ module GitWiki
     
     def to_hash
       {
-        :name => name,
-        :content => content,
-        :to_html => to_html
+        "name" => name,
+        "content" => content,
+        "to_html" => to_html
       }
     end
 
@@ -161,6 +161,7 @@ module GitWiki
 
     get "/:page/edit" do
       @page = Page.find_or_create(params[:page])
+      p @page.to_hash
       liquid :edit, :locals => {:page => @page.to_hash}
     end
 
