@@ -21,11 +21,26 @@
   <div data-role="footer" data-id="nav" data-position="fixed">
     <div data-role="navbar">
       <ul>
-        <li><a href="/FAQ" data-icon="info" data-prefetch>FAQ</a></li>
-        <li><a href="/phone" data-icon="phone" data-prefetch>Contact</a></li>
-        <li><a href="/index" class="ui-state-persist ui-btn-active" data-icon="fahome" data-iconpos="notext">Home</a></li>
-        <li><a href="/Formulary" data-icon="faplus" data-prefetch>Rx</a></li>
-        <li><a href="/documents" data-icon="file" data-prefetch>Docs</a></li>
+        <li>
+          <a href="/FAQ" data-icon="info" data-prefetch
+            {% if page.name == 'FAQ' %}class="ui-state-persist ui-btn-active"{% endif %}>FAQ</a>
+        </li>
+        <li>
+          <a href="/phone" data-icon="phone" data-prefetch
+            {% if page.name == 'phone' %}class="ui-state-persist ui-btn-active"{% endif %}>Contact</a>
+        </li>
+        <li>
+          <a href="/index" data-icon="fahome" data-iconpos="notext" data-prefetch
+            {% if page.name == 'index' %}class="ui-state-persist ui-btn-active"{% endif %}>Home</a>
+        </li>
+        <li>
+          <a href="/Formulary" data-icon="faplus" data-prefetch
+            {% if page.name == 'Formulary' %}class="ui-state-persist ui-btn-active"{% endif %}>Rx</a>
+        </li>
+        <li>
+          <a href="/documents" data-icon="file" data-prefetch
+            {% if page.name == 'documents' %}class="ui-state-persist ui-btn-active"{% endif %}>Docs</a>
+        </li>
       </ul>
     </div><!-- /navbar -->
   </div>
