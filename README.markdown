@@ -1,5 +1,7 @@
-EHHapp: a mobile-optimized wiki built on git-wiki
-=================================================
+EHHapp
+======
+
+**A mobile-optimized wiki built on git-wiki.**
 
 The EHHapp is a user editable version of the original [EHHOP mobile website][] (sometimes
 called the Referrals App), which contained pocket reference information that may be
