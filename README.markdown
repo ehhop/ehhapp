@@ -1,7 +1,7 @@
 EHHapp
 ======
 
-**A mobile-optimized wiki built on git-wiki.**
+**A mobile-optimized wiki built on [git-wiki][].**
 
 The EHHapp is a user editable version of the original [EHHOP mobile website][] (sometimes
 called the Referrals App), which contained pocket reference information that may be
@@ -18,15 +18,15 @@ Install
 
 The EHHapp is a Ruby/Rack web application.  Ruby is preinstalled on most Macs and packaged for
 most Linuxes.  You should also install [Rubygems][gems].  The fellowing gems are 
-required to run git-wiki:
+required:
 
 - [Sinatra][]
 - [mojombo-grit][]
 - [Liquid][]
 - [RDiscount][]
 
-It is usually simplest to install the `bundler` gem and then run `bundle install` to install 
-all required gems.
+It is usually simplest to install the `bundler` gem and then within your checkout's directory,
+run `bundle install` to install all required gems.
 
 Then, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
 and point your browser at <http://0.0.0.0:4567/>.
