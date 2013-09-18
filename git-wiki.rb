@@ -1,8 +1,16 @@
 require "sinatra/base"
 require "grit"
 require "rdiscount"
+require "yaml"
+
+# A mobile-optimized wiki for the East Harlem Health Outreach
+# Partnership, Icahn School of Medicine at Mount Sinai, NY, NY
+#
+# Original license for git-wiki.rb is WTFPL
+# License for this fork is MIT (see README.markdown)
 
 module GitWiki
+  
   class << self
     attr_accessor :homepage, :extension, :repository
   end
@@ -24,6 +32,11 @@ module GitWiki
   end
 
   class Page
+    METADATA_FIELDS = {
+      'template' => 'show',
+      'title' => ''
+    }
+    
     def self.find_all
       return [] if repository.tree.contents.empty?
       repository.tree.contents.collect { |blob| new(blob).to_hash }
@@ -71,14 +84,13 @@ module GitWiki
 
     def initialize(blob)
       @blob = blob
+      extract_front_matter
     end
 
     def to_html
-      # TODO: rip out YAML front matter
       # wiki_link content and translate to HTML
-      # Apply appropriate post-translational modifications
-      # Load appropriate liquid template and insert content
-      RDiscount.new(wiki_link(content)).to_html
+      # Apply appropriate post-translational modifications based on specified template
+      RDiscount.new(wiki_link(body)).to_html
     end
 
     def to_s
@@ -88,7 +100,8 @@ module GitWiki
     def to_hash
       {
         "name" => name,
-        "content" => content,
+        "body" => body,
+        "metadata" => metadata,
         "to_html" => to_html
       }
     end
@@ -104,14 +117,27 @@ module GitWiki
     def content
       @blob.data
     end
+    
+    attr_reader :metadata, :body
 
-    def update_content(new_content)
+    def update_content(new_body, new_metadata = {})
+      new_content = "#{ new_metadata.to_yaml }--- \n#{ new_body }"
       return if new_content == content
       File.open(file_name, "w") { |f| f << new_content }
       add_to_index_and_commit!
     end
 
     private
+    def extract_front_matter
+      if content =~ /\A(---\s*\n.*?\n?)^(---\s*$\n?)/m
+        @metadata = YAML.load($1)
+        @body = $'
+      else
+        @metadata = METADATA_FIELDS.clone
+        @body = content
+      end
+    end
+    
     def add_to_index_and_commit!
       Dir.chdir(self.class.repository.working_dir) {
         self.class.repository.add(@blob.name)
@@ -128,16 +154,30 @@ module GitWiki
     end
 
     def wiki_link(str)
-      str.gsub(/([A-Z][a-z]+[A-Z][A-Za-z0-9]+)/) { |page|
-        %Q{<a class="#{self.class.css_class_for(page)}"} +
-          %Q{href="/#{page}">#{page}</a>}
+      str.gsub(/\[\[ *([a-z]+[A-Za-z0-9_-]+) *\]\]/) { |m|
+        %Q{<a class="#{self.class.css_class_for($1)}"} +
+          %Q{href="/#{$1}">#{$1}</a>}
       }
     end
   end
 
   class App < Sinatra::Base
     set :app_file, __FILE__
-    set :views, settings.root + '/_layouts'
+    set :views, [settings.root + '/templates', settings.root + '/_layouts']
+    
+    # Allow templates in multiple folders.  The ones in _layouts are special and
+    # can't be set as a template for a Page.  The ones in templates *can* be set as
+    # a template for a Page by the user.
+    helpers do
+      def find_template(views, name, engine, &block)
+        Array(views).each { |v| super(v, name, engine, &block) }
+      end
+      
+      # Allow enumeration of the templates that can be set as a template in a Page's metadata
+      def templates
+        Dir["#{ settings.views[0] }/*.liquid"].map{|f| File.basename(f, '.liquid') }
+      end
+    end
 
     error PageNotFound do
       page = request.env["sinatra.error"].name
@@ -160,19 +200,21 @@ module GitWiki
     get "/:page/edit" do
       @page = Page.find_or_create(params[:page])
       p @page.to_hash
-      liquid :edit, :locals => {:page => @page.to_hash}
+      liquid :edit, :locals => {:page => @page.to_hash, :templates => templates}
     end
 
     get "/:page" do
       @page = Page.find(params[:page])
-      # TODO: change the template based on which template is specified 
-      # in the Page's YAML front matter
-      liquid :show, :locals => {:page => @page.to_hash}
+      template = @page.metadata['template']
+      template = templates.include?(template) ? template.to_sym : :show
+      liquid template, :locals => {:page => @page.to_hash}
     end
 
     post "/:page" do
       @page = Page.find_or_create(params[:page])
-      @page.update_content(params[:body])
+      new_metadata = {}
+      Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
+      @page.update_content(params[:body], new_metadata)
       redirect "/#{@page}"
     end
 

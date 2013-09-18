@@ -41,7 +41,6 @@ Nginx/Passenger or Nginx/Unicorn.
 [git-wiki]: https://github.com/sr/git-wiki
 [Sinatra]: http://www.sinatrarb.com
 [GitHub]: https://github.com/sr/git-wiki
-[forks]: https://github.com/sr/git-wiki/network
 [al3x]: https://github.com/al3x/gitwiki
 [gems]: http://www.rubygems.org/
 [mojombo-grit]: https://github.com/mojombo/grit

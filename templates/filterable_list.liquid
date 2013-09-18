@@ -1,0 +1,10 @@
+<div data-role="header">
+  <h1>{% if page.metadata.title != '' %}{{ page.metadata.title }}{% else %}EHHapp{% endif %}</h1>
+  <a class="ui-btn-right" href="/{{ page.name }}/edit" data-icon="gear">Edit</a>
+</div><!-- /header -->
+
+<div data-role="content">
+
+{{ page.to_html }}
+
+</div><!-- /content -->
