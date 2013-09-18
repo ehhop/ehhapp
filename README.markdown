@@ -1,100 +1,75 @@
-git-wiki: because who needs cool names when you use git?
-========================================================
+EHHapp: a mobile-optimized wiki built on git-wiki
+=================================================
 
-git-wiki is a wiki that relies on git to keep pages' history
-and [Sinatra][] to serve them.
+The EHHapp is a user editable version of the original [EHHOP mobile website][] (sometimes
+called the Referrals App), which contained pocket reference information that may be
+useful to clinicians at the [EHHOP clinic][].
 
-I wrote git-wiki as a quick and dirty hack, mostly to play with Sinatra.
-It turned out that Sinatra is an awesome little web framework and that this
-hack isn't as useless as I first though since I now use it daily.
+By making it user editable, the aim is to allow information to be more up to date and allow
+EHHOP clinicians to self-manage the reference information that they need.
 
-However, it is definitely not feature rich and will probably never be because
-I mostly use it as a web frontend for `git`, `ls` and `vim`.
-
-If you want history, search, etc. you should look at other people's [forks][],
-especially [al3x][]'s one.
+The editability functionality was forked from [git-wiki][], a wiki that relies on git to 
+keep pages' history and [Sinatra][] to serve them.
 
 Install
 -------
 
-The fellowing [gems][] are required to run git-wiki:
+The EHHapp is a Ruby/Rack web application.  Ruby is preinstalled on most Macs and packaged for
+most Linuxes.  You should also install [Rubygems][gems].  The fellowing gems are 
+required to run git-wiki:
 
 - [Sinatra][]
 - [mojombo-grit][]
-- [HAML][]
+- [Liquid][]
 - [RDiscount][]
 
-Run with `mkdir ~/wiki && (cd ~/wiki && git init) && ./run.ru -sthin -p4567`
-and point your browser at <http://0.0.0.0:4567/>. Enjoy!
+It is usually simplest to install the `bundler` gem and then run `bundle install` to install 
+all required gems.
 
-See also
---------
+Then, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
+and point your browser at <http://0.0.0.0:4567/>.
 
-- [How to use vim to edit &lt;textarea&gt; in lynx][tip]
-- [WiGit][] think git-wiki except implemented in PHP
-- [ikiwiki][] is a wiki compiler supporting git
+Data will be stored in a git repository in the ehhapp-data folder.
 
+For deployment, the EHHapp is comparable to most Rack apps and could be served with, e.g., 
+Nginx/Passenger or Nginx/Unicorn.
 
-  [Sinatra]: http://www.sinatrarb.com
-  [GitHub]: http://github.com/sr/git-wiki
-  [forks]: http://github.com/sr/git-wiki/network
-  [al3x]: http://github.com/al3x/gitwiki
-  [gems]: http://www.rubygems.org/
-  [mojombo-grit]: http://github.com/mojombo/grit
-  [HAML]: http://haml.hamptoncatlin.com
-  [RDiscount]: http://github.com/rtomayko/rdiscount
-  [tip]: http://wiki.infogami.com/using_lynx_&_vim_with_infogami
-  [WiGit]: http://el-tramo.be/software/wigit
-  [ikiwiki]: http://ikiwiki.info
+[EHHOP mobile website]: http://ehhop0.appspot.com
+[EHHOP clinic]: http://icahn.mssm.edu/education/medical-education/east-harlem-health-outreach-partnership
+[git-wiki]: https://github.com/sr/git-wiki
+[Sinatra]: http://www.sinatrarb.com
+[GitHub]: https://github.com/sr/git-wiki
+[forks]: https://github.com/sr/git-wiki/network
+[al3x]: https://github.com/al3x/gitwiki
+[gems]: http://www.rubygems.org/
+[mojombo-grit]: https://github.com/mojombo/grit
+[Liquid]: http://www.liquidmarkup.org
+[RDiscount]: https://github.com/rtomayko/rdiscount
+[tip]: http://wiki.infogami.com/using_lynx_&_vim_with_infogami
+[WiGit]: http://el-tramo.be/software/wigit
+[ikiwiki]: http://ikiwiki.info
 
-Quotes
-------
-
-<blockquote>
-<p>[...] the first wiki engine I'd consider worth using for my own projects.</p>
-<p><cite>
-<a href="http://www.dekorte.com/blog/blog.cgi?do=item&amp;id=3319">
-Steve Dekorte</a>
-</cite></p>
-</blockquote>
-
-<blockquote>
-<p>Oh, it looks like <a href="http://atonie.org/2008/02/git-wiki">Git Wiki</a>
-may be the starting point for what I need...</p>
-<p><cite><a href="http://tommorris.org/blog/2008/03/09#pid2761430">
-Tom Morris on "How to build the perfect wiki"</a></cite></p>
-</blockquote>
-
-<blockquote>
-<p>What makes git-wiki so cool is because it is backed by a git store,
-you can clone your wiki just like you could any other git repository.
-I’ve always wanted a wiki that I could a.) pull offline when I didn’t
-have access to the Internets and b.) edit (perhaps in bulk)
-in my favorite text editor. git-wiki allows both.</p>
-<p><cite><a href="http://github.com/willcodeforfoo/git-wiki/wikis">
-Cloning your wiki</a></cite></p>
-</blockquote>
-
-<blockquote>
-<p>Numerous people have written diff and merge systems for wikis;
-TWiki even uses RCS. If they used git instead, the repository would be tiny, and
-you could make a personal copy of the entire wiki to take on the plane with you,
-then sync your changes back when you're done.</p>
-<p><cite><a href="http://www.advogato.org/person/apenwarr/diary/371.html">
-Git is the next Unix</a></cite></p>
-</blockquote>
-
-Licence
+License
 -------
-               DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                       Version 2, December 2004
 
-    Copyright (C) 2008 Simon Rozet <simon@rozet.name>
-    Everyone is permitted to copy and distribute verbatim or modified
-    copies of this license document, and changing it is allowed as long
-    as the name is changed.
+The MIT License (MIT)
 
-               DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-      TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+Copyright (c) 2013 East Harlem Health Outreach Partnership
 
-     0. You just DO WHAT THE FUCK YOU WANT TO.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
