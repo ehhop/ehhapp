@@ -7,6 +7,9 @@
 #     mkdir ehhapp-data && (cd ehhapp-data && git init)
 repo: ./ehhapp-data
 
+# Should we use authentication before pages can be edited?
+auth_enabled: yes
+
 # What is the common domain for the email addresses that will be
 # used to authenticate users?
 mail_domain: mssm.edu

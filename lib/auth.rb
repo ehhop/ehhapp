@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'rack-session-file'
 require 'securerandom'
+require 'mail'
 
 module Sinatra
   module EmailAuth
@@ -15,7 +16,7 @@ module Sinatra
       end
 
       def authorize!
-        unless authorized?
+        unless authorized? or !settings.config["auth_enabled"]
           session[:back] = request.path_info
           redirect "/login"
         end
@@ -39,6 +40,13 @@ module Sinatra
       app.post "/login" do
         if params[:email] =~ /^[\w._-]+$/
           session[:key] = SecureRandom.hex
+          mail = Mail.new do
+            from     'ehhop.clinic@mssm.edu'
+            to       "#{params[:email]}@mssm.edu"
+            subject  'EHHapp Authentication Request'
+            body     mail_body
+          end
+          
           # TODO: send email with link to verify_email?key=...
           # TODO: Show a message that the link was sent.
         else
