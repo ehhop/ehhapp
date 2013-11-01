@@ -1,31 +1,31 @@
 <div data-role="header">
   <a data-rel="back" data-icon="back" href="/{{ page.name }}">Back</a>
-  <h1>Editing {{ page.name }}</h1>
+  <h1>{% if page.new %}Creating{% else %}Editing{% endif %} {{ page.name }}</h1>
 </div>
   
 <div data-role="content">
   
 <form method="POST" action="/{{ page.name }}">
   <p>
-    <label for="title" class="ui-hidden-accessible">Title:</label>
+    <label for="title" class="ui-hidden-accessible">Title</label>
     <input type="text" name="title" id="title" value="{{ page.metadata.title }}" placeholder="Title"/>
   </p>
   <p>
-    <label for="body" class="ui-hidden-accessible">Content:</label>
+    <label for="body" class="ui-hidden-accessible">Content</label>
     <textarea name="body" rows="30" style="width: 100%">{{ page.body }}</textarea>
   </p>
-  <p>
-    <label for="template">Template:</label>
-    <select name="template">
+  <div data-role="fieldcontain">
+    <label for="template">Template</label>
+    <select name="template" id="template">
       {% for t in templates %}
       <option value="{{ t }}"{% if page.metadata.template == t %} selected{% endif %}>{{ t }}</option>
       {% endfor %}
     </select>
-  </p>
-  <p>
-    <input type="submit" data-theme="b" value="Save this page"/>
-    <a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a>
-  </p>
+  </div>
+  <fieldset class="ui-grid-a">
+    <div class="ui-block-a"><a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a></div>
+    <div class="ui-block-b"><input type="submit" data-theme="b" value="Save this page"/></div>	   
+  </fieldset>
 </form>
 
 </div><!-- /content -->

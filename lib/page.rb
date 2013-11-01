@@ -81,7 +81,8 @@ module GitWiki
         "name" => name,
         "body" => body,
         "metadata" => metadata,
-        "to_html" => to_html
+        "to_html" => to_html,
+        "new" => new?
       }
     end
 

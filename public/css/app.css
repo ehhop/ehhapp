@@ -35,3 +35,28 @@
   border: 1px solid rgba(127,127,127,0.3);
   padding: 0.2em 0.4em 0.2em 0.3em;
 }
+
+.display-table {
+  display: table;
+  width: 100%;
+}
+
+.display-table-row {
+  display: table-row;
+}
+
+#email.ui-input-text {
+  width: 96%;
+  display: table-cell;
+}
+
+.domain {
+  display: table-cell;
+}
+
+@media (min-width: 450px) {
+  .ui-field-contain label.ui-select {
+    line-height: 2.8em;
+    text-align: right;
+  }
+}

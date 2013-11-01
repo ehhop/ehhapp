@@ -14,13 +14,16 @@ require_all "lib/"
 module GitWiki
   
   class << self
-    attr_accessor :homepage, :extension, :repository
+    attr_accessor :homepage, :extension, :config, :repository
   end
+  
+  self.config = {}
 
-  def self.new(repository, extension, homepage)
+  def self.new(config, extension, homepage)
     self.homepage   = homepage
     self.extension  = extension
-    self.repository = Grit::Repo.new(repository)
+    self.config.merge!(YAML::load(File.open(config)))
+    self.repository = Grit::Repo.new(self.config['repo'])
 
     App
   end
@@ -36,6 +39,9 @@ module GitWiki
   class App < Sinatra::Base
     set :app_file, __FILE__
     set :views, [settings.root + '/templates', settings.root + '/_layouts']
+    
+    register Sinatra::EmailAuth
+    set :config, GitWiki.config
     
     # Allow templates in multiple folders.  The ones in _layouts are special and
     # can't be set as a template for a Page.  The ones in templates *can* be set as
@@ -70,8 +76,8 @@ module GitWiki
     end
 
     get "/:page/edit" do
+      authorize!
       @page = Page.find_or_create(params[:page])
-      p @page.to_hash
       liquid :edit, :locals => {:page => @page.to_hash, :templates => templates}
     end
 

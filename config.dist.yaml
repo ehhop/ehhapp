@@ -1,0 +1,23 @@
+# This is a sample configuration file for the EHHAPP
+#
+# Before running the EHHapp, copy this to config.yaml and customize.
+
+# Where is the git repository that contains the wiki pages?
+# To use the default here,
+#     mkdir ehhapp-data && (cd ehhapp-data && git init)
+repo: ./ehhapp-data
+
+# What is the common domain for the email addresses that will be
+# used to authenticate users?
+mail_domain: mssm.edu
+
+# What usernames at the previously configured domain are allowed
+# to edit all pages and approve changes?
+# Users that are not editors will be able to submit changes, but not
+# approve them, or be designated as editors for a page.
+editors:
+    - theodore.pak
+    - kevin.hu
+    - kristen.ng
+    - felix.richter
+    - mark.finkelstein
