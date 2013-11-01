@@ -16,8 +16,4 @@ mail_domain: mssm.edu
 # Users that are not editors will be able to submit changes, but not
 # approve them, or be designated as editors for a page.
 editors:
-    - theodore.pak
-    - kevin.hu
-    - kristen.ng
-    - felix.richter
-    - mark.finkelstein
+    - example.name
