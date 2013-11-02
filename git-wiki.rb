@@ -116,7 +116,7 @@ module GitWiki
         template = @page.metadata["template"]
         template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
         # TODO: make header able to swap login/logout button to back button set in page metadata
-        liquid template, :locals => locals(@page, :header => header(@page), :sid => request.cookies["rack.session"])
+        liquid template, :locals => locals(@page, :header => header(@page))
       rescue PageNotFound => err
         empty_page = Page.empty(err.name)
         liquid :empty, :locals => locals(empty_page, :header => header(empty_page))
