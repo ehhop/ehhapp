@@ -1,31 +1,92 @@
 <div data-role="header">
-  <a data-rel="back" data-icon="back" href="/{{ page.name }}">Back</a>
-  <h1>{% if page.new %}Creating{% else %}Editing{% endif %} {{ page.name }}</h1>
+  <a data-icon="back" {% if page.new %}data-rel="back"{% else %}href="/{{ page.name | escape }}"{% endif %}>Back</a>
+  <h1>{% if page.new %}Creating{% else %}Editing{% endif %} /{{ page.name }}</h1>
+  
+  {% if just_auth %}
+    {% if username and username != '' %}
+  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ username }}</div>
+    {% else %}
+  <div class="ui-body ui-bar-e auth-flash">You have been logged out</div>
+    {% endif %}
+  {% endif %}
 </div>
   
-<div data-role="content">
+<div data-role="content" class="page-editor">
   
-<form method="POST" action="/{{ page.name }}">
-  <p>
-    <label for="title" class="ui-hidden-accessible">Title</label>
-    <input type="text" name="title" id="title" value="{{ page.metadata.title }}" placeholder="Title"/>
-  </p>
-  <p>
-    <label for="body" class="ui-hidden-accessible">Content</label>
-    <textarea name="body" rows="30" style="width: 100%">{{ page.body }}</textarea>
-  </p>
-  <div data-role="fieldcontain">
-    <label for="template">Template</label>
-    <select name="template" id="template">
-      {% for t in templates %}
-      <option value="{{ t }}"{% if page.metadata.template == t %} selected{% endif %}>{{ t }}</option>
+<div class="editor-form-cont">
+  <form method="POST" action="/{{ page.name }}" class="editor-form">
+    <p>
+      <label for="{{ page.name | escape }}-title" class="ui-hidden-accessible">Title</label>
+      <input type="text" name="title" id="{{ page.name }}-title" class="edit-title" value="{{ page.metadata.title }}" 
+        placeholder="Title"/>
+    </p>
+    <p>
+      <label for="{{ page.name | escape }}-body" class="ui-hidden-accessible">Content</label>
+      <textarea name="body" rows="30" style="width: 100%" 
+        class="mdown-editor">{{ page.body | escape }}</textarea>
+    </p>
+    <div data-role="fieldcontain">
+      <label for="{{ page.name | escape }}-template">Template</label>
+      <select name="template" id="{{ page.name | escape }}-template" class="select-template">
+        {% for t in templates %}
+        <option value="{{ t.name }}"{% if page.metadata.template == t.name %} selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if is_editor %}
+    <div data-role="fieldcontain">
+      <label for="{{ page.name | escape }}-owner">Page owner</label>
+      <select name="owner" id="{{ page.name | escape }}-owner" class="select-editor">
+        {% for ed in editors %}
+        <option value="{{ ed }}"{% if page.metadata.editor == ed %} selected{% endif %}>{{ ed }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="metadata">
+      {% if page.metadata.author and page.metadata.author != '' %}
+      <p class="authorship">
+        Last edited by <span class="author">{{ page.metadata.author }}</span><span class="when">
+          {{ page.metadata.last_modified | ago }}</span>.
+      </p>
+      {% endif %}
+      {% unless is_editor %}
+      <p class="ownership">
+        <span class="owner">{% if page.metadata.owner %}{{ page.metadata.owner }}{% else %}{{ editors | first }}{% endif %}</span>
+        must approve all changes to this page by non-editors.
+      </p>
+      {% endunless %}
+    </div>
+    <fieldset class="ui-grid-a">
+      <div class="ui-block-a"><a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a></div>
+      <div class="ui-block-b"><input type="submit" data-theme="b" value="Save this page"/></div>	   
+    </fieldset>
+  </form>
+</div>
+
+<div class="examples">
+  <h2>How to use the <span class="template-name">{{ page.metadata.template }}</span> template</h2>
+  {% for t in templates %}
+  <div class="examples-list examples-{{ t.name }}{% if page.metadata.template == t.name %} examples-active{% endif %}">
+    {% if t.examples == null or t.examples == empty %}
+    <div class="no-help-yet">This template does not have any examples yet, sorry!</div>
+    {% else %}
+      {% for ex in t.examples %}
+    <div class="example-pair clear">
+      <div class="mdown">
+        <div class="help-text">Write this&hellip;</div>
+        <pre class="code ui-body ui-body-c">{{ ex.mdown | escape }}</pre>
+      </div>
+      <div class="html">
+        <div class="help-text">to make this</div>
+        <div class="content-preview">{{ ex.html }}</div>
+      </div>
+    </div>
       {% endfor %}
-    </select>
+    {% endif %}
   </div>
-  <fieldset class="ui-grid-a">
-    <div class="ui-block-a"><a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a></div>
-    <div class="ui-block-b"><input type="submit" data-theme="b" value="Save this page"/></div>	   
-  </fieldset>
-</form>
+  {% endfor %}
+  <div class="clear"></div>
+</div>
 
 </div><!-- /content -->

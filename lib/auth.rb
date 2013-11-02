@@ -11,13 +11,23 @@ module Sinatra
         settings.config["mail_domain"]
       end
       
+      def username
+        session[:authorized] && session[:username]
+      end
+      
       def authorized?
-        session[:authorized]
+        !!username
+      end
+      
+      def is_editor?
+        editors = settings.config["editors"] || []
+        !!username && editors.include?(username)
       end
 
-      def authorize!
+      def authorize!(cancel_path = nil)
         unless authorized? or !settings.config["auth_enabled"]
-          session[:back] = request.path_info
+          session[:auth_next_for] = request.path_info
+          session[:auth_cancel] = cancel_path || request.path_info
           redirect "/login"
         end
       end
@@ -33,36 +43,69 @@ module Sinatra
       app.helpers EmailAuth::Helpers
 
       app.get "/login" do
-        back = session[:back] || "/"
-        liquid :login, :locals => {:back => back, :domain => mail_domain}
+        auth_for = session[:auth_next_for] || "/"
+        cancel = session[:auth_cancel] || "/"
+        error = params[:error] || username
+        liquid :login, :locals => {:error => error, :auth_for => auth_for, :auth_cancel => cancel, :domain => mail_domain}
       end
 
       app.post "/login" do
+        auth_for = session[:auth_for] = params[:auth_for]
+        cancel = session[:auth_cancel] || "/"
+        
         if params[:email] =~ /^[\w._-]+$/
           session[:key] = SecureRandom.hex
+          session[:username] = params[:email]
+          session[:authorized] = false
+          
+          to_addr = "#{params[:email]}@mssm.edu"
+          link = url("/verify_email?key=#{session[:key]}")
+          
+          # TODO: could maybe also embed cookie -> rack.session in here, so that
+          #   if the email client opens the link in the wrong browser, we can fix that
+          #   by switching to the right session anyway.
+          #   But have to think about this.  It is CERTAINLY more dangerous since the email
+          #   will then contain everything needed to compromise the session.
           mail = Mail.new do
             from     'ehhop.clinic@mssm.edu'
-            to       "#{params[:email]}@mssm.edu"
+            to       to_addr
             subject  'EHHapp Authentication Request'
-            body     mail_body
+            body     sprintf(app.settings.config["mail_auth_body"], link)
           end
           
-          # TODO: send email with link to verify_email?key=...
-          # TODO: Show a message that the link was sent.
+          begin
+            mail.deliver!
+          rescue
+            mail.delivery_method :sendmail
+            mail.deliver
+          end
+          
+          liquid :login, :locals => {:auth_cancel => cancel, :sent => true}
         else
-          # TODO: display error page saying that wasn't a valid address.
-          liquid :login, :locals => {:back => params[:back], :domain => mail_domain, :error => true}
+          liquid :login, :locals => {:error => 'username', :auth_for => auth_for, :auth_cancel => cancel, :domain => mail_domain}
         end
       end
       
       app.get "/verify_email" do
-        # TODO: take params[:key], check if it matches the session, etc. ...
-        #       If it does, set session[:authorized] to true
-        #       If not, display a gentle error page and redirect to the login page.
-        # TODO: If we wanted to be fancy we'd not care about an existing session
-        #       and use an HMAC within the key to create it from scratch.  But this
-        #       is prone to nasty crypto bugs
+        # Check if the supplied key matches the one set in the server-side session
+        if params[:key] == session[:key]
+          session[:authorized] = true
+          session[:just_auth] = true
+          redirect session[:auth_for]
+        else
+          # The key didn't match!  Redirect back to the login page, so they can try again
+          # Also display an error telling the user that the key didn't match and how to fix that
+          redirect "/login?error=key"
+        end
       end
+      
+      app.get "/logout" do
+        session[:authorized] = false
+        session[:username] = nil
+        session[:just_auth] = true
+        liquid :logout
+      end
+      
     end
   end
 

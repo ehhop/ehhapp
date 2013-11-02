@@ -1,12 +1,24 @@
 require "grit"
 require "rdiscount"
+require_relative "core_ext"
 
 module GitWiki
 
   class Page
     METADATA_FIELDS = {
-      'template' => 'show',
-      'title' => ''
+      'template' => 'unstyled',
+      'title' => '',
+      'author' => nil,
+      'last_modified' => nil,
+      'owner' => nil
+    }
+    
+    EMPTY_AS_HASH = {
+      "name" => "",
+      "body" => "",
+      "metadata" => {},
+      "to_html" => "",
+      "new" => true
     }
   
     def self.find_all
@@ -40,6 +52,14 @@ module GitWiki
     def self.extension
       GitWiki.extension || raise
     end
+    
+    def self.empty(name)
+      EMPTY_AS_HASH.clone.merge({"name" => name, "metadata" => METADATA_FIELDS.clone})
+    end
+    
+    def self.get_template(name)
+      GitWiki.const_get(name.to_classname)
+    end
 
     def self.find_blob(page_name)
       repository.tree/(page_name + extension)
@@ -65,8 +85,7 @@ module GitWiki
       # Apply appropriate post-translational modifications based on specified template
       begin
         if metadata["template"]
-          class_name = metadata["template"].gsub(/(^|[_-])(\w)/){|m| $2.upcase }
-          html = GitWiki.const_get(class_name).new(html).transform
+          html = self.class.get_template(metadata["template"]).new(html).transform
         end
       rescue NameError; end
       html
@@ -77,13 +96,13 @@ module GitWiki
     end
   
     def to_hash
-      {
+      EMPTY_AS_HASH.clone.merge({
         "name" => name,
         "body" => body,
         "metadata" => metadata,
         "to_html" => to_html,
         "new" => new?
-      }
+      })
     end
 
     def new?

@@ -1,9 +1,8 @@
+{{ header }}
+
 <div data-role="content">
 
-<div id="edit">
-  <a href="/{{ page.name }}/edit">Edit this page</a>
-</div>
-<h1>{{ page.name }}</h1>
+<h1>/{{ page.name | escape }}</h1>
 <div id="#content">
   {{ page.to_html }}
 </div>

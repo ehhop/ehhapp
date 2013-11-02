@@ -1,0 +1,17 @@
+<div data-role="header">
+  {% if username and username != '' %}
+  <a class="ui-btn-left" href="/logout" data-ajax="false">Logout {{ username }}</a>
+  {% else %}
+  <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
+  {% endif %}
+  <h1>{% if page.metadata.title != '' %}{{ page.metadata.title }}{% else %}EHHapp{% endif %}</h1>
+  <a class="ui-btn-right" data-theme="" href="/{{ page.name }}/edit" data-icon="gear">Edit</a>
+  
+  {% if just_auth %}
+    {% if username and username != '' %}
+  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ username }}</div>
+    {% else %}
+  <div class="ui-body ui-bar-e auth-flash">You have been logged out</div>
+    {% endif %}
+  {% endif %}
+</div><!-- /header -->

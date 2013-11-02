@@ -16,7 +16,9 @@
 </head> 
 <body> 
 
-<div data-role="page" data-dom-cache="true">
+<div data-role="page" data-current-username="{{ username }}"
+  {% unless nocache %}data-dom-cache="true"{% endunless %}
+  {% if page_class and page_class != '' %}class="{{ page_class }}"{% endif %}>
 
   <div data-role="footer" data-id="nav" data-position="fixed">
     <div data-role="navbar">

@@ -1,16 +1,71 @@
-$(document).delegate("#phq9,#phq9-spanish", "pageinit", function() {
-  $(this).find(':radio').click(function() {
+// Some global variables to keep track of things.
+
+var currentUsername = null;
+
+// Page-specific logic goes here.
+
+$(document).delegate("#phq9, #phq9-spanish", "pageinit", function() {
+  $(this).find(":radio").click(function() {
     var total = 0,
-      $page = $(this).closest('#phq9,#phq9-spanish');
-    $page.find(':checked').each(function() { total += parseInt($(this).val(), 10); });
-    $page.find('.totalSum').text("Score: " + total);
+      $page = $(this).closest("#phq9, #phq9-spanish");
+    $page.find(":checked").each(function() { total += parseInt($(this).val(), 10); });
+    $page.find(".totalSum").text("Score: " + total);
   });
 });
 
-$(document).delegate('#formulary', 'pageinit', function() {
-  $(this).find('[data-type=search]').attr('autocomplete', 'off').attr('autocapitalize', 'off');
+$(document).delegate("#formulary", "pageinit", function() {
+  $(this).find("[data-type=search]").attr("autocomplete", "off").attr("autocapitalize", "off");
 })
 
+$(document).delegate(".ui-page.editor", "pageinit", function() {
+  var $page = $(this);
+  $(this).find(".select-template").change(function() {
+    var newTemplate = $(this).val();
+    $page.find('.template-name').text(newTemplate);
+    $page.find('.examples-active').fadeOut(function() {
+      $(this).removeClass('examples-active');
+      $page.find('.examples-'+newTemplate).addClass('examples-active').fadeIn();
+    });
+  });
+});
+
+// A method for removing ALL cached pages from the DOM.
+// This is useful if the user does something like logging in or out that changes the content
+// of all of them at once.
+$(document).delegate(".ui-page", "cleardomcache", function() {
+  $(this).siblings('.ui-page:not(.ui-page-active)').remove();
+});
+
+// This function takes care of changes in authentication state.
+$(document).delegate(".ui-page", "pageinit", function() {
+  // If there was an authentication flash message, show it but set a timer to fade it out after
+  // 5 seconds.  Also, clear the DOM cache, since the authentication state has changed.
+  var $flash = $(this).find(".auth-flash"),
+    newCurrentUsername = $(this).data('current-username');
+  if ($flash.length) {
+    setTimeout(function() { $flash.fadeOut(); }, 5000);
+    $(this).trigger("cleardomcache");
+  } else {
+    // If the username has changed on the new page, a login/logout event must have occurred.
+    // This also requires us to clear the DOM cache.
+    if (currentUsername !== null && currentUsername !== newCurrentUsername) {
+      console.log(currentUsername, newCurrentUsername);
+      $(this).trigger("cleardomcache");
+    }
+    currentUsername = newCurrentUsername;
+  }
+});
+
+// Whenever the user tries to login, explode all cached pages
+$(document).delegate(".login-form", "submit", function() {
+  $(this).closest(".ui-page").trigger("cleardomcache");
+});
+
+// // Whenever the user edits the page, remove the editor page after the next page loads (as it is out of date)
+// $(document).delegate(".editor-form", "submit", function() {
+//   var $page = $(this).closest('.ui-page');
+//   $(document).one("pageinit", ".ui-page", function() { if (this !== $page.get(0)) { $page.remove(); } });
+// });
 
 
 // $(document).bind("mobileinit", function () {
@@ -40,7 +95,7 @@ $(document).delegate('#formulary', 'pageinit', function() {
 //     });
 //  
 //  
-//     $('#menu, .pages').live("swipeleft", function () {
+//     $("#menu, .pages").live("swipeleft", function () {
 //         if (menuStatus) {
 //             $(".ui-page-active").animate({
 //                 marginLeft: "0px",
@@ -50,7 +105,7 @@ $(document).delegate('#formulary', 'pageinit', function() {
 //         }
 //     });
 //  
-//     $('.pages').live("swiperight", function () {
+//     $(".pages").live("swiperight", function () {
 //         if (!menuStatus) {
 //             $(".ui-page-active").animate({
 //                 marginLeft: "165px",
@@ -60,7 +115,7 @@ $(document).delegate('#formulary', 'pageinit', function() {
 //         }
 //     });
 //  
-//     $('div[data-role="page"]').live('pagebeforeshow', function (event, ui) {
+//     $("div[data-role="page"]").live("pagebeforeshow", function (event, ui) {
 //         menuStatus = false;
 //         $(".pages").css("margin-left", "0");
 //     });
@@ -68,11 +123,11 @@ $(document).delegate('#formulary', 'pageinit', function() {
 //     // Menu behaviour
 //     $("#menu li a").click(function () {
 //         var p = $(this).parent();
-//         if ($(p).hasClass('active')) {
-//             $("#menu li").removeClass('active');
+//         if ($(p).hasClass("active")) {
+//             $("#menu li").removeClass("active");
 //         } else {
-//             $("#menu li").removeClass('active');
-//             $(p).addClass('active');
+//             $("#menu li").removeClass("active");
+//             $(p).addClass("active");
 //         }
 //     });
 // });

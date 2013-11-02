@@ -1,0 +1,13 @@
+{{ header }}
+
+<div data-role="content">
+
+<h1>Page not found</h1>
+<div id="#content">
+  <p class="one-button-message">
+    No page yet exists at <strong>/{{ page.name | escape }}</strong>.
+  </p>
+  <a href="/{{ page.name }}/edit" data-role="button">Create this page</a>
+</div>
+
+</div><!-- /content -->

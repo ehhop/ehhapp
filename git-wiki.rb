@@ -2,6 +2,7 @@ require "sinatra/base"
 require "grit"
 require "yaml"
 require "require_all"
+require "pp"
 
 require_all "lib/"
 
@@ -14,16 +15,17 @@ require_all "lib/"
 module GitWiki
   
   class << self
-    attr_accessor :homepage, :extension, :config, :repository
+    attr_accessor :homepage, :extension, :config, :repository, :template_cache
   end
   
-  self.config = {}
+  self.config = YAML::load(File.open("config.dist.yaml"))
+  self.template_cache = nil
 
   def self.new(config, extension, homepage)
     self.homepage   = homepage
     self.extension  = extension
     self.config.merge!(YAML::load(File.open(config)))
-    self.repository = Grit::Repo.new(self.config['repo'])
+    self.repository = Grit::Repo.new(self.config["repo"])
 
     App
   end
@@ -53,17 +55,43 @@ module GitWiki
       
       # Allow enumeration of the templates that can be set as a template in a Page's metadata
       def templates
-        Dir["#{ settings.views[0] }/*.liquid"].map{|f| File.basename(f, '.liquid') }
+        GitWiki.template_cache ||= Dir["#{ settings.views[0] }/*.liquid"].map do |f|
+          name = File.basename(f, '.liquid')
+          {
+            "name" => name,
+            "examples" => Page.get_template(name).examples
+          }
+        end
+      end
+      
+      def header(page)
+        liquid :header, :layout => false, :locals => locals(page)
+      end
+            
+      def locals(page, and_these = {})
+        {
+          :just_auth => @just_auth, 
+          :username => @username,
+          :page => page.to_hash,
+          :nocache => false,
+          :is_editor => @is_editor,
+          :templates => templates,
+          :editors => settings.config["editors"]
+        }.merge(and_these)
       end
     end
 
-    error PageNotFound do
-      page = request.env["sinatra.error"].name
-      redirect "/#{page}/edit"
-    end
+    # error PageNotFound do
+    #   page = request.env["sinatra.error"].name
+    #   redirect "/#{page}/edit" unless ["favicon.ico"].include? page
+    # end
 
     before do
       content_type "text/html", :charset => "utf-8"
+      @just_auth = !!session[:just_auth]
+      session[:just_auth] = false
+      @username = username
+      @is_editor = is_editor?
     end
 
     get "/" do
@@ -76,22 +104,31 @@ module GitWiki
     end
 
     get "/:page/edit" do
-      authorize!
+      authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page])
-      liquid :edit, :locals => {:page => @page.to_hash, :templates => templates}
+      liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true)
     end
 
     get "/:page" do
-      @page = Page.find(params[:page])
-      template = @page.metadata['template']
-      template = templates.include?(template) ? template.to_sym : :show
-      liquid template, :locals => {:page => @page.to_hash}
+      begin
+        @page = Page.find(params[:page])
+        template = @page.metadata["template"]
+        template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
+        # TODO: make header able to swap login/logout button to back button set in page metadata
+        liquid template, :locals => locals(@page, :header => header(@page))
+      rescue PageNotFound => err
+        empty_page = Page.empty(err.name)
+        liquid :empty, :locals => locals(empty_page, :header => header(empty_page))
+      end
     end
 
     post "/:page" do
+      authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page])
       new_metadata = {}
       Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
+      new_metadata["author"] = username
+      new_metadata["last_modified"] = Time.now
       @page.update_content(params[:body], new_metadata)
       redirect "/#{@page}"
     end

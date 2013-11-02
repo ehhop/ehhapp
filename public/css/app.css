@@ -1,5 +1,143 @@
 @import url("jqm-icon-pack-fa.css");
 
+/** FONTS **/
+
+@font-face {
+  font-family: 'Bitstream Vera Sans Mono';
+  src: url('font/VeraMono-webfont.eot');
+  src: url('font/VeraMono-webfont.eot?#iefix') format('embedded-opentype'),
+       url('font/VeraMono-webfont.woff') format('woff'),
+       url('font/VeraMono-webfont.ttf') format('truetype'),
+       url('font/VeraMono-webfont.svg#BitstreamVeraSansMonoRoman') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bitstream Vera Sans Mono';
+  src: url('font/VeraMono-Italic-webfont.eot');
+  src: url('font/VeraMono-Italic-webfont.eot?#iefix') format('embedded-opentype'),
+       url('font/VeraMono-Italic-webfont.woff') format('woff'),
+       url('font/VeraMono-Italic-webfont.ttf') format('truetype'),
+       url('font/VeraMono-Italic-webfont.svg#BitstreamVeraSansMonoOblique') format('svg');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Bitstream Vera Sans Mono';
+  src: url('font/VeraMono-Bold-webfont.eot');
+  src: url('font/VeraMono-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+       url('font/VeraMono-Bold-webfont.woff') format('woff'),
+       url('font/VeraMono-Bold-webfont.ttf') format('truetype'),
+       url('font/VeraMono-Bold-webfont.svg#BitstreamVeraSansMonoBold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bitstream Vera Sans Mono';
+  src: url('font/VeraMono-Bold-Italic-webfont.eot');
+  src: url('font/VeraMono-Bold-Italic-webfont.eot?#iefix') format('embedded-opentype'),
+       url('font/VeraMono-Bold-Italic-webfont.woff') format('woff'),
+       url('font/VeraMono-Bold-Italic-webfont.ttf') format('truetype'),
+       url('font/VeraMono-Bold-Italic-webfont.svg#BitstreamVeraSansMonoBdOb') format('svg');
+  font-weight: bold;
+  font-style: italic;
+}
+
+/** GENERAL ELEMENTS **/
+
+.auth-flash {
+  position: absolute;
+  top: 0.2em;
+  left: 10%;
+  right: 10%;
+  text-align: center;
+  z-index: 1000;
+}
+
+.no-page-message {
+  margin-bottom: 4em;
+}
+
+/** EDITOR PAGES **/
+
+.ui-page.editor {
+  background: #ccc;
+}
+
+.editor-form-cont {
+  background: #f9f9f9;
+  margin: -15px;
+  padding: 15px;
+  -webkit-box-shadow: 0px 0px 24px 12px rgba(249,249,249,1);
+  -moz-box-shadow: 0px 0px 24px 12px rgba(249,249,249,1);
+  box-shadow: 0px 0px 24px 12px rgba(249,249,249,1);
+}
+
+.edit-title {
+  font-weight: bold;
+}
+
+.page-editor .metadata {
+  text-align: center;
+}
+
+.page-editor .author, .page-editor .owner {
+  font-weight: bold;
+}
+
+.page-editor .mdown-editor, .page-editor pre.code {
+  font-family: "Bitstream Vera Sans Mono",Menlo,Consolas,monospace,serif;
+}
+
+.page-editor .examples {
+  margin: 30px -15px;
+  padding: 15px;
+}
+
+.page-editor .examples-list {
+  display: none;
+}
+
+.page-editor .examples-list.examples-active {
+  display: block;
+  opacity: 0.8;
+}
+
+.page-editor .clear {
+  clear: both;
+}
+
+.page-editor .example-pair {
+  border-top: 1px solid #bbb;
+  padding-top: 15px;
+  margin-top: 60px;
+}
+
+.page-editor .example-pair:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 30px;
+}
+
+.page-editor .content-preview {
+  margin: 30px;
+}
+
+.page-editor .help-text {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 80%;
+}
+
+.page-editor pre.code {
+
+}
+
+/** OTHER PAGES **/
+
 .totalSum {
   position: absolute;
   right: 0.2em;
@@ -54,9 +192,42 @@
   display: table-cell;
 }
 
+/* CSS optimized for wider screens (tablets, desktop screens) */
+
 @media (min-width: 450px) {
   .ui-field-contain label.ui-select {
     line-height: 2.8em;
     text-align: right;
+  }
+  
+  .page-editor .html {
+    float: left;
+    width: 50%;
+  }
+  
+  .page-editor .mdown {
+    float: left;
+    width: 49%;
+  }
+  
+  .page-editor .help-text {
+    display: none;
+  }
+  
+  .page-editor .html .help-text {
+    padding-left: 15px;
+  }
+  
+  .page-editor .example-pair {
+    border-top: 1px solid #bbb;
+    padding-top: 0;
+  }
+  
+  .page-editor .example-pair:first-child {
+    border-top: none;
+  }
+  
+  .page-editor .example-pair:first-child .help-text {
+    display: block;
   }
 }

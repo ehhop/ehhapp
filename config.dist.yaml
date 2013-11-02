@@ -14,9 +14,23 @@ auth_enabled: yes
 # used to authenticate users?
 mail_domain: mssm.edu
 
+# What to put in the email message
+mail_auth_body: |
+    Hello there!
+
+    You (or somebody claiming to be you) is attempting to 
+    edit the EHHapp.  If this was you, please click the following
+    link and you will be authenticated.
+
+    %s
+
+    Cheers,
+    The EHHapp team
+
 # What usernames at the previously configured domain are allowed
 # to edit all pages and approve changes?
 # Users that are not editors will be able to submit changes, but not
 # approve them, or be designated as editors for a page.
+# The first user in this list is the default editor for all new pages.
 editors:
     - example.name

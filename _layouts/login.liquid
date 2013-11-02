@@ -1,11 +1,40 @@
 <div data-role="header">
-  <a data-rel="back" data-icon="back" href="{{ back | escape }}">Back</a>
+  <a data-rel="back" data-icon="back" href="{{ auth_cancel | escape }}">Back</a>
   <h1>Login</h1>
 </div>
   
 <div data-role="content">
   
-<form method="POST" action="/login">
+{% if sent %}
+
+<p class="one-button-message">
+  Email sent!  Please check your @mssm.edu mail and click on the link to resume editing
+  the EHHapp.
+</p>
+
+<p><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">In the meanwhile, I'd like to go back</a></p>
+
+{% else %}
+
+<form method="POST" action="/login" class="login-form">
+  {% case error %}
+  {% when 'username' %}
+  <div class="ui-body ui-body-e">
+    Sorry, that wasn't a plausible <strong>@{{ domain | escape }}</strong> username!
+  </div>
+  {% when 'key' %}
+  <div class="ui-body ui-body-e">
+    You clicked an authentication link that either expired or was sent from a different browser.
+    Either copy and paste the address into the browser that you used when sending it, or try again
+    using the form below.
+  </div>
+  {% else %}
+    {% if error %}
+  <div class="ui-body ui-body-e">
+    You are already logged in as <strong>{{ error }}</strong>
+  </div>
+    {% endif %}
+  {% endcase %}
   <p>
     You must login to submit changes.  Please provide your
     <strong>@{{ domain | escape }}</strong> address, and we will email a link
@@ -19,10 +48,12 @@
     </div>
   </div>
   <fieldset class="ui-grid-a">
-    <div class="ui-block-a"><a class="cancel" href="{{ back | escape }}" data-role="button">Cancel</a></div>
+    <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
     <div class="ui-block-b"><input type="submit" data-theme="e" value="Send me a link"/></div>
   </fieldset>
-  <input type="hidden" name="back" value="{{ back | escape }}">
+  <input type="hidden" name="auth_for" value="{{ auth_for | escape }}">
 </form>
+
+{% endif %}
 
 </div><!-- /content -->
