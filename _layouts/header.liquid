@@ -1,6 +1,6 @@
 <div data-role="header">
   {% if username and username != '' %}
-  <a class="ui-btn-left" href="/logout" data-ajax="false">Logout {{ username }}</a>
+  <a class="ui-btn-left" href="/logout" data-ajax="false">Logout <span class="username">{{ username }}</span></a>
   {% else %}
   <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
   {% endif %}

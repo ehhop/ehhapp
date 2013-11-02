@@ -12,7 +12,7 @@
   the EHHapp.
 </p>
 
-<p><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">In the meanwhile, I'd like to go back</a></p>
+<p><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Go back for now</a></p>
 
 {% else %}
 
@@ -49,7 +49,7 @@
   </div>
   <fieldset class="ui-grid-a">
     <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
-    <div class="ui-block-b"><input type="submit" data-theme="e" value="Send me a link"/></div>
+    <div class="ui-block-b"><input type="submit" data-theme="e" value="Send link"/></div>
   </fieldset>
   <input type="hidden" name="auth_for" value="{{ auth_for | escape }}">
 </form>

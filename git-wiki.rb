@@ -98,6 +98,7 @@ module GitWiki
       redirect "/" + GitWiki.homepage
     end
 
+    # NOTE: this route is a holdover from git-wiki and really isn't being used for anything, yet.
     get "/pages" do
       @pages = Page.find_all
       liquid :list, :locals => {:pages => @pages.map(&:to_hash), :page => {"name" => "pages"}}

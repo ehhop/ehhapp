@@ -61,6 +61,10 @@
   margin-bottom: 4em;
 }
 
+.ui-header .username {
+  display: none;
+}
+
 /** EDITOR PAGES **/
 
 .ui-page.editor {
@@ -195,6 +199,10 @@
 /* CSS optimized for wider screens (tablets, desktop screens) */
 
 @media (min-width: 450px) {
+  .ui-header .username {
+    display: inline;
+  }
+  
   .ui-field-contain label.ui-select {
     line-height: 2.8em;
     text-align: right;
