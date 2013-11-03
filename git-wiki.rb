@@ -76,7 +76,7 @@ module GitWiki
           :nocache => false,
           :is_editor => @is_editor,
           :templates => templates,
-          :editors => settings.config["editors"]
+          :editors => editors
         }.merge(and_these)
       end
     end

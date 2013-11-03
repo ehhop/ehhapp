@@ -2,6 +2,26 @@
 
 var currentUsername = null;
 
+// Detect if we are running fullscreen on an iPhone
+
+function isFullScreen() {
+  return window.navigator.userAgent.indexOf('iPhone') != -1 && window.navigator.standalone;
+}
+
+// If running fullscreen on an iPhone, use localStorage to restore to the last viewed page
+// This is because everytime you switch into the website on a phone, it loses all state otherwise
+
+if (isFullScreen() && window.localStorage) {
+  $(document).on("mobileinit", function() {
+    if (window.localStorage["lastPage"]) {
+      $.mobile.changePage(window.localStorage["lastPageVisited"]);
+    }
+  });
+  $(document).on("pagechange", function(e) {
+    window.localStorage["lastPageVisited"] = e.currentTarget.URL;
+  });
+}
+
 // Page-specific logic goes here.
 
 $(document).delegate("#phq9, #phq9-spanish", "pageinit", function() {

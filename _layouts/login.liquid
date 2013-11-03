@@ -1,44 +1,65 @@
 <div data-role="header">
-  <a data-rel="back" data-icon="back" href="{{ auth_cancel | escape }}">Back</a>
+  <a data-icon="back" href="{{ auth_cancel | escape }}">Back</a>
   <h1>Login</h1>
 </div>
   
 <div data-role="content">
   
-{% if sent %}
-
-<p class="one-button-message">
-  Email sent!  Please check your @mssm.edu mail and click on the link to resume editing
-  the EHHapp.
-</p>
-
-<p><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Go back for now</a></p>
-
-{% else %}
-
 <form method="POST" action="/login" class="login-form">
-  {% case error %}
-  {% when 'username' %}
+  {% if error %}
   <div class="ui-body ui-body-e">
-    Sorry, that wasn't a plausible <strong>@{{ domain | escape }}</strong> username!
+    {% case error %}
+    {% when 'implausible_username' %}
+      Sorry, that wasn't a plausible <strong>@{{ domain | escape }}</strong> username!
+    {% when 'key_expired' %}
+      The key we sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }} has expired.
+      Please use the form below to send a new one.
+    {% when 'too_soon' %}
+      You can't send another key to that email address yet.  Please wait a few minutes and try again.
+    {% when 'locked_out' %}
+      You have entered too many incorrect codes.  Please wait a few minutes and check back.
+    {% when 'session_problem' %}
+      Something happened on our servers and we couldn't log you in.  Sorry about that, please try again!
+    {% when 'invalid_key' %}
+      That six-digit code was incorrect.
+      Caution, you only get <strong>{{ max_failures }}</strong> total attempts to enter a correct code!
+    {% when 'send_different' %}
+      A code has already been sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }};
+      you may try a different address below.
+    {% else %}
+      You are already logged in as <strong>{{ error }}</strong>.
+    {% endcase %}
   </div>
-  {% when 'key' %}
-  <div class="ui-body ui-body-e">
-    You clicked an authentication link that either expired or was sent from a different browser.
-    Either copy and paste the address into the browser that you used when sending it, or try again
-    using the form below.
-  </div>
+  {% endif %}
+  
+  {% if sent %}
+  
+  <p>
+    A six-digit code was sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }}.
+    Please check your email and enter the code here.  Be careful, because you only have
+    <strong>{{ max_failures }}</strong> attempts to enter it correctly!
+  </p>
+  <p class="key-cont">
+    <input name="key" id="key" type="tel" size="6" maxlen="6" class="key"/>
+  </p>
+  <fieldset class="ui-grid-a">
+    <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
+    <div class="ui-block-b"><input type="submit" data-theme="e" value="Login"/></div>
+  </fieldset>
+  <p class="secondary">
+    If you didn't receive anything, you can try <a href="/login?error=send_different">sending another email.</a>
+  </p>
+  
   {% else %}
-    {% if error %}
-  <div class="ui-body ui-body-e">
-    You are already logged in as <strong>{{ error }}</strong>
-  </div>
-    {% endif %}
-  {% endcase %}
+  
   <p>
     You must login to submit changes.  Please provide your
-    <strong>@{{ domain | escape }}</strong> address, and we will email a link
-    to authorize you to this device or browser.
+    <strong>@{{ domain | escape }}</strong> address, and we will email you a six-digit
+    code to authorize you to this device or browser.
+  </p>
+  <p>
+    Once you authorize this device, you shouldn't have to re-enter any codes
+    as long as you access the EHHapp at least once every couple months.
   </p>
   <div class="display-table">
     <div class="display-table-row">
@@ -49,11 +70,12 @@
   </div>
   <fieldset class="ui-grid-a">
     <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
-    <div class="ui-block-b"><input type="submit" data-theme="e" value="Send link"/></div>
+    <div class="ui-block-b"><input type="submit" data-theme="e" value="Send code"/></div>
   </fieldset>
   <input type="hidden" name="auth_for" value="{{ auth_for | escape }}">
+  
+  {% endif %}
+  
 </form>
-
-{% endif %}
 
 </div><!-- /content -->
