@@ -27,11 +27,11 @@ auth:
 
         You (or somebody claiming to be you) is attempting to edit 
         the EHHapp (at http://ehhapp.org).  If this was you, please 
-        return to the login screen and enter this code:
+        return to the login screen and enter this six-digit code:
 
-        CODE: %s
+        %s
 
-        and you will be logged in on this device!
+        ...and then you will have access to page editor!
 
         Cheers,
         The EHHapp team
