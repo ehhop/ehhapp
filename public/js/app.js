@@ -10,7 +10,7 @@ function isFullScreen() {
 
 // If running fullscreen on an iPhone, use localStorage to restore to the last viewed page
 // This is because everytime you switch into the website on a phone, it loses all state otherwise
-// TODO: Besides the page visible, we can also try to restore the 
+// TODO: Besides which page was visible, we can also try to restore the position on the page.
 
 if (isFullScreen() && window.localStorage) {
   $(document).one("pageinit", ".ui-page", function() {
