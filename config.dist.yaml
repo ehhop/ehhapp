@@ -35,6 +35,11 @@ auth:
 
         Cheers,
         The EHHapp team
+        
+    # Where do we want to store lockouts, attempts, etc.?
+    # It is stored in a Ruby PStore, by default in Dir.tmpdir, but this can be changed
+    # to another location by specifying an absolute path here
+    pstore_filename: ehhapp_emailauth.pstore
 
     # Minimum amount of time between issuing keys for a user, in seconds
     key_issue_interval: 300

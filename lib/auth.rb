@@ -2,23 +2,34 @@ require 'sinatra/base'
 require 'rack-session-file'
 require 'securerandom'
 require 'mail'
+require 'tempfile'
+require 'pstore'
 
 module Sinatra
   module EmailAuth
     
     class << self
-      attr_accessor :lockouts, :keys_issued, :failures
+      attr_accessor :store
     end
     
-    # In a smarter, more scalable world, these would have to live somewhere where multiple
-    # instances of this program could access it without worry.  Perhaps in a Tokyo Cabinet.
-    self.lockouts = {}
-    self.keys_issued = {}
-    self.failures = {}
+    # This is a variable that will be linked to the PStore to contain lockouts, key issue times, etc.
+    # See Helpers#auth_store for the initialization code
+    self.store = nil
 
     module Helpers
       def auth_settings
         settings.config["auth"] || {}
+      end
+      
+      def auth_store
+        return EmailAuth.store if EmailAuth.store
+        store = EmailAuth.store = PStore.new(File.expand_path(auth_settings["pstore_filename"], Dir.tmpdir))
+        store.transaction do
+          store[:lockouts] ||= {}
+          store[:keys_issued] ||= {}
+          store[:failures] ||= {}
+        end
+        store
       end
       
       def username
@@ -47,12 +58,14 @@ module Sinatra
       
       def issue_key(username)
         # Check that a key wasn't issued too recently in the past.
-        key_issued = EmailAuth.keys_issued[username]
-        return false if key_issued && key_issued > (Time.now - auth_settings["key_issue_interval"])
+        auth_store.transaction do
+          key_issued = auth_store[:keys_issued][username]
+          return false if key_issued && key_issued > (Time.now - auth_settings["key_issue_interval"])
         
-        # Issue the key.  It is a random 6-digit number with no leading 0's.
-        session[:key] = (SecureRandom.random_number * 900000 + 100000).round.to_s
-        EmailAuth.keys_issued[username] = Time.now
+          # Issue the key.  It is a random 6-digit number with no leading 0's.
+          session[:key] = (SecureRandom.random_number * 900000 + 100000).round.to_s
+          auth_store[:keys_issued][username] = Time.now
+        end
         session[:username] = username
         session[:authorized] = false
         
@@ -75,14 +88,18 @@ module Sinatra
       
       # Check that the user is not in within a lockout window (i.e., currently locked out)
       def locked_out?(username = nil)
-        locked_out_until = EmailAuth.lockouts[username || session[:username]]
-        !!(locked_out_until && locked_out_until > Time.now)
+        auth_store.transaction do
+          locked_out_until = auth_store[:lockouts][username || session[:username]]
+          !!(locked_out_until && locked_out_until > Time.now)
+        end
       end
       
       # Check that the key issued for a user has not expired
       def key_expired?(username = nil)
-        key_issued = EmailAuth.keys_issued[username || session[:username]]
-        !key_issued || Time.now - key_issued > auth_settings["key_expiration_interval"]
+        auth_store.transaction do
+          key_issued = auth_store[:keys_issued][username || session[:username]]
+          !key_issued || Time.now - key_issued > auth_settings["key_expiration_interval"]
+        end
       end
       
       def invalid_key?(key, username = nil)
@@ -90,20 +107,22 @@ module Sinatra
         return "session_problem" if !username
         return "locked_out" if locked_out?(username)
         return "key_expired" if key_expired?(username)
-        if key != session[:key] # Check if the key matches the one stored in the session.
-          # Shift the time into the failures array for that user
-          (EmailAuth.failures[username] ||= []).unshift(Time.now)
-          # Trim the failures array to max_failures elements
-          EmailAuth.failures[username] = EmailAuth.failures[username].first(auth_settings["max_failures"])
-          # If the last is within max_failures_interval of now, initiate a lockout
-          if EmailAuth.failures[username].last > Time.now - auth_settings["max_failures_interval"]
-            EmailAuth.lockouts[username] = Time.now + auth_settings["lockout_interval"]
+        auth_store.transaction do
+          if key != session[:key] # Check if the key matches the one stored in the session.
+            # Shift the time into the failures array for that user
+            (auth_store[:failures][username] ||= []).unshift(Time.now)
+            # Trim the failures array to max_failures elements
+            auth_store[:failures][username] = auth_store[:failures][username].first(auth_settings["max_failures"])
+            # If the last is within max_failures_interval of now, initiate a lockout
+            if auth_store[:failures][username].last > Time.now - auth_settings["max_failures_interval"]
+              auth_store[:lockouts][username] = Time.now + auth_settings["lockout_interval"]
+            end
+            "invalid_key"
+          else
+            # Clear the key issued time so the user can logout and re-issue a key right away
+            auth_store[:keys_issued][username] = nil
+            false
           end
-          "invalid_key"
-        else
-          # Clear the key issued time so the user can logout and re-issue a key right away
-          EmailAuth.keys_issued[username] = nil
-          false
         end
       end
       
@@ -140,11 +159,9 @@ module Sinatra
         sent = false
         if !error && session[:key] && session[:username] && !authorized?
           # We've sent an email with the key, display a numeric input to enter it
-          if key_expired? then error = "key_expired"
-          else
-            error = "locked_out" if locked_out?
-            sent = true
-          end
+          if locked_out? then error = "locked_out"
+          elsif key_expired? then error = "key_expired"; end
+          sent = !error
         else
           error ||= username   # Warn if we are already logged in
           auth_for = session[:auth_next_for] || "/"
@@ -160,15 +177,16 @@ module Sinatra
         
         if params[:key]
           # We have received a key
-          sent = true
           error = invalid_key?(params[:key])
+          sent = true unless error == "locked_out"
           login! && redirect(session[:auth_for]) unless error
         else
           # We are trying to send a key to an email address
           auth_for = session[:auth_for] = params[:auth_for]
           error = "implausible_username" unless params[:email] =~ /^[\w._-]+$/
+          error = "locked_out" if locked_out?(params[:email])
           unless error
-            # Try to issue; if we can't, it's because it's too soon to be able to issue a new key for this user
+            # Try to issue; if we can't, it's because a key was issued too recently
             error = "too_soon" unless issue_key(params[:email])
             sent = !error
           end
@@ -195,5 +213,6 @@ module Sinatra
     end
   end
 
+  # Tell Sinatra that the EmailAuth module exists.
   register EmailAuth
 end

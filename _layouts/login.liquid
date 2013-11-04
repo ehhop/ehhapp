@@ -12,14 +12,15 @@
     {% when 'implausible_username' %}
       Sorry, that wasn't a plausible <strong>@{{ domain | escape }}</strong> username!
     {% when 'key_expired' %}
-      The key we sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }} has expired.
+      The key we sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }} has expired.<br/>
       Please use the form below to send a new one.
     {% when 'too_soon' %}
-      You can't send another key to that email address yet.  Please wait a few minutes and try again.
+      You can't send another key to that email address yet.<br/>Please wait a few minutes and try again.
     {% when 'locked_out' %}
-      You have entered too many incorrect codes.  Please wait a few minutes and check back.
+      You have entered too many incorrect codes for {{ sent_to | escape }}@{{ domain | escape }}.
+      <br/>Please wait a few minutes and then try sending another email.
     {% when 'session_problem' %}
-      Something happened on our servers and we couldn't log you in.  Sorry about that, please try again!
+      Something happened on our servers and we couldn't log you in.<br/>Sorry about that, please try again!
     {% when 'invalid_key' %}
       That six-digit code was incorrect.
       Caution, you only get <strong>{{ max_failures }}</strong> total attempts to enter a correct code!
@@ -40,7 +41,7 @@
     <strong>{{ max_failures }}</strong> attempts to enter it correctly!
   </p>
   <p class="key-cont">
-    <input name="key" id="key" type="tel" size="6" maxlen="6" class="key"/>
+    <input name="key" id="key" type="tel" size="6" maxlength="6" class="key"/>
   </p>
   <fieldset class="ui-grid-a">
     <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
@@ -72,6 +73,13 @@
     <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
     <div class="ui-block-b"><input type="submit" data-theme="e" value="Send code"/></div>
   </fieldset>
+  
+    {% if error and error == 'send_different' %}
+  <p class="secondary">
+    If you received a code already, <a href="/login">try entering it here.</a>
+  </p>
+    {% endif %}
+  
   <input type="hidden" name="auth_for" value="{{ auth_for | escape }}">
   
   {% endif %}
