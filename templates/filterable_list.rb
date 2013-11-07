@@ -26,6 +26,7 @@ module GitWiki
         <li><a href="destination">List item link</a></li>
       </ul>
     HTML
+    
     example "* Putting it together\n* [First link](dest_1)\n* [Next link](dest_2)", <<-HTML
       <ul data-role="listview" data-inset="false" data-theme="d">
         <li data-role="list-divider">Putting it together</li>
