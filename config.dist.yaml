@@ -58,3 +58,40 @@ auth:
     # The first user in this list is the default editor for all new pages.
     editors:
     - example.name
+    
+
+# Some relevant examples to help people learn Markdown quickly.
+
+mdown_examples:
+    - |
+       It's **bold text** and _italic text_.
+    
+       Two returns creates a new paragraph.
+       Without two returns, the paragraph
+       keeps flowing.
+       
+    - |
+        # Big header.
+
+        ## Smaller header.
+        
+    - |
+        [A link](http://ehhapp.org).
+        
+    - |
+        > This is a blockquote
+
+    - |
+        How to make bulleted lists:
+
+        * Use
+        * Asterisks
+        * Before each item.
+    
+    - |
+        And finally numerical lists:
+    
+        1. Start them like so
+        2. Even though you use numbers
+        1. They can be the wrong ones
+        1. and it still works OK.

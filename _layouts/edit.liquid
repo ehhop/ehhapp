@@ -65,27 +65,47 @@
 </div>
 
 <div class="examples">
-  <h2>How to use the <span class="template-name">{{ page.metadata.template }}</span> template</h2>
-  {% for t in templates %}
-  <div class="examples-list examples-{{ t.name }}{% if page.metadata.template == t.name %} examples-active{% endif %}">
-    {% if t.examples == null or t.examples == empty %}
-    <div class="no-help-yet">This template does not have any examples yet, sorry!</div>
-    {% else %}
-      {% for ex in t.examples %}
-    <div class="example-pair clear">
-      <div class="mdown">
-        <div class="help-text">Write this&hellip;</div>
-        <pre class="code ui-body ui-body-c">{{ ex.mdown | escape }}</pre>
+  <div data-role="collapsible" data-theme="c">
+    <h2>Guide for the <span class="template-name">{{ page.metadata.template }}</span> template</h2>
+    {% for t in templates %}
+    <div class="examples-list examples-{{ t.name }}{% if page.metadata.template == t.name %} examples-active{% endif %}">
+      {% if t.examples == null or t.examples == empty %}
+      <div class="no-help-yet">This template does not have any examples yet, sorry!</div>
+      {% else %}
+        {% for ex in t.examples %}
+      <div class="example-pair clear">
+        <div class="mdown">
+          <div class="help-text">Write this&hellip;</div>
+          <pre class="code ui-body ui-body-c">{{ ex.mdown | escape }}</pre>
+        </div>
+        <div class="html">
+          <div class="help-text">to make this</div>
+          <div class="content-preview">{{ ex.html }}</div>
+        </div>
       </div>
-      <div class="html">
-        <div class="help-text">to make this</div>
-        <div class="content-preview">{{ ex.html }}</div>
-      </div>
+        {% endfor %}
+      {% endif %}
     </div>
-      {% endfor %}
-    {% endif %}
+    {% endfor %}
   </div>
-  {% endfor %}
+  <div class="clear"></div>
+  <div data-role="collapsible" data-theme="c">
+    <h2>General formatting guide</h2>
+    <div class="examples-list examples-always-active">
+      {% for ex in mdown_examples %}
+      <div class="example-pair clear">
+        <div class="mdown">
+          <div class="help-text">Write this &hellip;</div>
+          <pre class="code ui-body ui-body-c">{{ ex.mdown }}</pre>
+        </div>
+        <div class="html">
+          <div class="help-text">to make this</div>
+          <div class="content-preview">{{ ex.html }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
   <div class="clear"></div>
 </div>
 

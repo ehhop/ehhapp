@@ -23,6 +23,21 @@ if (isFullScreen() && window.localStorage) {
   });
 }
 
+// Specific for the editor:
+
+$(document).delegate(".ui-page.editor", "pageinit", function() {
+  var $page = $(this);
+  // Change the examples shown underneath the editor based on the template selected.
+  $(this).find(".select-template").change(function() {
+    var newTemplate = $(this).val();
+    $page.find('.template-name').text(newTemplate);
+    $page.find('.examples-active').fadeOut(function() {
+      $(this).removeClass('examples-active');
+      $page.find('.examples-'+newTemplate).addClass('examples-active').fadeIn();
+    });
+  });
+});
+
 // Page-specific logic goes here.
 
 $(document).delegate("#phq9, #phq9-spanish", "pageinit", function() {
@@ -36,18 +51,6 @@ $(document).delegate("#phq9, #phq9-spanish", "pageinit", function() {
 
 $(document).delegate("#formulary", "pageinit", function() {
   $(this).find("[data-type=search]").attr("autocomplete", "off").attr("autocapitalize", "off");
-})
-
-$(document).delegate(".ui-page.editor", "pageinit", function() {
-  var $page = $(this);
-  $(this).find(".select-template").change(function() {
-    var newTemplate = $(this).val();
-    $page.find('.template-name').text(newTemplate);
-    $page.find('.examples-active').fadeOut(function() {
-      $(this).removeClass('examples-active');
-      $page.find('.examples-'+newTemplate).addClass('examples-active').fadeIn();
-    });
-  });
 });
 
 // A method for removing ALL cached pages from the DOM.

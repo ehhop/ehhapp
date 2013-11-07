@@ -2,6 +2,7 @@ require "sinatra/base"
 require "grit"
 require "yaml"
 require "require_all"
+require "rdiscount"
 require "pp"
 
 require_all "lib/"
@@ -15,7 +16,7 @@ require_all "lib/"
 module GitWiki
   
   class << self
-    attr_accessor :homepage, :extension, :config, :repository, :template_cache
+    attr_accessor :homepage, :extension, :config, :repository, :template_cache, :mdown_examples
   end
   
   self.config = YAML::load(File.open("config.dist.yaml"))
@@ -26,6 +27,12 @@ module GitWiki
     self.extension  = extension
     self.config.merge!(YAML::load(File.open(config)))
     self.repository = Grit::Repo.new(self.config["repo"])
+    self.mdown_examples = self.config["mdown_examples"].map do |ex|
+      {
+        "mdown" => ex,
+        "html" => RDiscount.new(ex).to_html
+      }
+    end
 
     App
   end
@@ -107,7 +114,8 @@ module GitWiki
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page])
-      liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true)
+      liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
+          :mdown_examples => GitWiki.mdown_examples)
     end
 
     get "/:page" do
@@ -144,7 +152,6 @@ module GitWiki
       @page.update_content(params[:body], new_metadata)
       redirect "/#{@page}"
       
-
     end
 
   end

@@ -21,9 +21,9 @@ module GitWiki
       </ul>
     HTML
   
-    example "* [List item link](destination)", <<-HTML
+    example "* [List item link](URL)", <<-HTML
       <ul data-role="listview" data-inset="false" data-theme="d">
-        <li><a href="destination">List item link</a></li>
+        <li><a href="URL">List item link</a></li>
       </ul>
     HTML
     
