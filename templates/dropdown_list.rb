@@ -36,7 +36,7 @@ class DropdownList < TemplateTransformation
     processed
   end
 
-  example "* Dropdown Heading", <<-HTML
+  example "* Dropdown Heading %begin -put stuff here- end%", <<-HTML
       <div data-role="collapsible" data-collapsed="true"><h3><b>Dropdown Heading</b></h3></div>
   HTML
   
