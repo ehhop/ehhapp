@@ -28,7 +28,7 @@ module GitWiki
     self.config.merge!(YAML::load(File.open(config)))
     self.repository = Grit::Repo.new(self.config["repo"])
     self.mdown_examples = self.config["mdown_examples"].map do |ex|
-      { 
+      {
         "mdown" => ex,
         "html" => RDiscount.new(ex).to_html
       }

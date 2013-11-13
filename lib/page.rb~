@@ -81,7 +81,10 @@ module GitWiki
 
     def to_html
       # wiki_link content and translate to HTML
-      html = RDiscount.new(wiki_link(body)).to_html
+      tmp = wiki_link(body)
+      puts "wiki_link output: ", tmp
+      tmp<<"\n*r herpaderp"
+      html = RDiscount.new(tmp).to_html
       # Apply appropriate post-translational modifications based on specified template
       begin
         if metadata["template"]
