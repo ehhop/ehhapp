@@ -21,7 +21,7 @@ class DropdownList < TemplateTransformation
     processed = processed.gsub /((?:^-c.*\n)+)/ do
         c_block = $1
         ret = "<fieldset data-role=\"controlgroup\">"
-        matches = c_block.scan(/-c([^-c]*)/)
+        matches = c_block.scan(/-c((?:(?!-c).)*)/)
         junk_num = 0
         matches.each do |item|
           junk_num+=1
