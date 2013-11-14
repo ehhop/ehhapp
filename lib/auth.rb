@@ -206,8 +206,8 @@ module Sinatra
       # end
       
       app.get "/logout" do
-        logout!
-        liquid :logout
+        logout! if params[:confirm]
+        liquid :logout, :confirmed => !!params[:confirm]
       end
       
     end

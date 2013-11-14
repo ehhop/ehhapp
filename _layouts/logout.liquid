@@ -1,14 +1,27 @@
 <div data-role="header">
-  <a data-rel="back" data-icon="back" href="{{ auth_cancel | escape }}">Back</a>
+  <a data-rel="back" data-icon="back">Back</a>
   <h1>Logout</h1>
 </div>
   
 <div data-role="content">
+
+{% if confirmed %}
 
 <p class="one-button-message">
   You have been logged out of the the EHHapp on this device.
 </p>
 
 <p><a class="cancel" href="/" data-role="button" data-ajax="false">Thanks! Take me home</a></p>
+
+{% else %}
+
+<p class="one-button-message">
+  Click the following button to discard your credentials for the EHHapp on this device and log out.
+  You will be able to log back in by sending another email message with a six-digit code.
+</p>
+
+<p><a href="/logout?confirm" data-role="button" data-ajax="false" data-theme="e">Confirm logout</a></p>
+
+{% endif %}
 
 </div><!-- /content -->

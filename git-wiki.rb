@@ -111,6 +111,10 @@ module GitWiki
       liquid :list, :locals => {:pages => @pages.map(&:to_hash), :page => {"name" => "pages"}}
     end
 
+    # TODO: for all of these routes, we should validate if params[:page] is actually
+    #   a plausible page name, and forbid ones with special characters
+    # TODO: We should add the ability to specify and edit a "back" destination within page metadata
+
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page])
@@ -137,21 +141,24 @@ module GitWiki
       # TODO: perhaps this should find the latest page according to the HEAD of the 
       #   git branch of the current user
       @page = Page.find_or_create(params[:page])
+      new_metadata = @page.metadata.clone
       
-      # TODO: branch here based on whether the logged in user is an editor or now
-      #   If they are, they can commit directly, as per the current code.
-      #   If not, they should commit to a topic branch, and then the owner of the page
-      #   will receive an email telling them to review the changes and approve them or not.
-      #   This page provides a clue on how to use grit to commit to a new branch:
-      #   http://stackoverflow.com/questions/5839106/a-few-questions-about-grit
+      if @is_editor
+        Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
+        new_metadata["author"] = username
+        @page.update_content(params[:body], new_metadata)
+      else
+        # TODO: 
+        #   If the user is not an editor, they should commit to a topic branch, and then the 
+        #   owner of the page
+        #   will receive an email telling them to review the changes and approve them or not.
+        #   This page provides a clue on how to use grit to commit to a new branch:
+        #   http://stackoverflow.com/questions/5839106/a-few-questions-about-grit
+        new_metadata["author"] = username
+        @page.branch_content(username, params[:body], new_metadata)
+      end
       
-      new_metadata = {}
-      Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
-      new_metadata["author"] = username
-      new_metadata["last_modified"] = Time.now
-      @page.update_content(params[:body], new_metadata)
       redirect "/#{@page}"
-      
     end
 
   end
