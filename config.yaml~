@@ -1,0 +1,97 @@
+# This is a sample configuration file for the EHHAPP
+#
+# Before running the EHHapp, copy this to config.yaml and customize.
+
+# Where is the git repository that contains the wiki pages?
+# To use the default here,
+#     mkdir ehhapp-data && (cd ehhapp-data && git init)
+repo: ./ehhapp-data
+
+# Authentication settings go in this big block
+auth:
+    # Should we use authentication before pages can be edited?
+    enabled: no
+
+    # What is the common domain for the email addresses that will be
+    # used to authenticate users?
+    mail_domain: mssm.edu
+
+    # Where do auth emails come from?
+    mail_from: example@example.com
+    # Where will they bounce to (when people enter in invalid addresses)?
+    mail_bounce: example@example.com
+
+    # What to put in the email message
+    mail_body: |
+        Hello there!
+
+        You (or somebody claiming to be you) is attempting to edit 
+        the EHHapp (at http://ehhapp.org).  If this was you, please 
+        return to the login screen and enter this six-digit code:
+
+        %s
+
+        ...and then you will have access to page editor!
+
+        Cheers,
+        The EHHapp team
+        
+    # Where do we want to store lockouts, attempts, etc.?
+    # It is stored in a Ruby PStore, by default in Dir.tmpdir, but this can be changed
+    # to another location by specifying an absolute path here
+    pstore_filename: ehhapp_emailauth.pstore
+
+    # Minimum amount of time between issuing keys for a user, in seconds
+    key_issue_interval: 300
+    # Time until a key expires
+    key_expiration_interval: 600
+    # The maximum number of failures allowed, and within how many seconds, before a lockout occurs
+    max_failures: 2
+    max_failures_interval: 600
+    # How long a lockout is, in seconds
+    lockout_interval: 1800
+
+    # What usernames at the previously configured domain are allowed
+    # to edit all pages and approve changes?
+    # Users that are not editors will be able to submit changes, but not
+    # approve them, or be designated as editors for a page.
+    # The first user in this list is the default editor for all new pages.
+    editors:
+    - example.name
+    
+
+# Some relevant examples to help people learn Markdown quickly.
+
+mdown_examples:
+    - |
+       It's **bold text** and _italic text_.
+    
+       Two returns creates a new paragraph.
+       Without two returns, the paragraph
+       keeps flowing.
+       
+    - |
+        # Big header.
+
+        ## Smaller header.
+        
+    - |
+        [A link](http://ehhapp.org).
+        
+    - |
+        > This is a blockquote
+
+    - |
+        How to make bulleted lists:
+
+        * Use
+        * Asterisks
+        * Before each item.
+    
+    - |
+        And finally numerical lists:
+    
+        1. Start them like so
+        2. Even though you use numbers
+        1. They can be the wrong ones
+        1. and it still works OK.

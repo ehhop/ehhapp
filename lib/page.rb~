@@ -74,16 +74,17 @@ module GitWiki
     end
     private_class_method :create_blob_for
 
-    attr_reader :metadata, :body
-    
     def initialize(blob)
       @blob = blob
       extract_front_matter
     end
-    
+
     def to_html
       # wiki_link content and translate to HTML
-      html = RDiscount.new(wiki_link(body)).to_html
+      tmp = wiki_link(body)
+      puts "wiki_link output: ", tmp
+      tmp<<"\n*r herpaderp"
+      html = RDiscount.new(tmp).to_html
       # Apply appropriate post-translational modifications based on specified template
       begin
         if metadata["template"]
@@ -119,19 +120,13 @@ module GitWiki
       @blob.data
     end
   
+    attr_reader :metadata, :body
+
     def update_content(new_body, new_metadata = {})
-      new_metadata["last_modified"] = Time.now
       new_content = "#{ new_metadata.to_yaml }--- \n#{ new_body }"
       return if new_content == content
       File.open(file_name, "w") { |f| f << new_content }
       add_to_index_and_commit!
-    end
-    
-    def branch_content(branch_name, new_body, new_metadata = {})
-      new_metadata["last_modified"] = Time.now
-      new_content = "#{ new_metadata.to_yaml }--- \n#{ new_body }"
-      return if new_content == content
-      commit_to_new_branch!(branch_name, new_content)
     end
 
     private
@@ -150,15 +145,6 @@ module GitWiki
         self.class.repository.add(@blob.name)
       }
       self.class.repository.commit_index(commit_message)
-    end
-    
-    def branch_and_commit!(branch_name, new_content)
-      branch_name = "#{name}.branch_name"
-      index = self.class.repository.index
-      parents = [g.commit(branch_name) || g.commit("master")]
-      index.read_tree(g.commit(branch_name) ? branch_name : "master")
-      index.add(name + self.class.extension, new_content)
-      index.commit("Proposed edits to #{name} by #{branch_name}", parents, nil, nil, branch_name)
     end
 
     def file_name
