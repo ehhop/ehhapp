@@ -19,7 +19,7 @@ module GitWiki
     attr_accessor :homepage, :extension, :config, :repository, :template_cache, :mdown_examples
   end
   
-  self.config = YAML::load(File.open("config.yaml"))
+  self.config = YAML::load(File.open("config.dist.yaml"))
   self.template_cache = nil
 
   def self.new(config, extension, homepage)
