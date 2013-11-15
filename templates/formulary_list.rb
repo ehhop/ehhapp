@@ -34,7 +34,7 @@ module GitWiki
               name = $1
               price = $2
               tags = $3
-              if $1.match(/\s*_(.*)/)
+              if $1.match(/\s*~(.*)/)
                 name = $1
                 new_node = Nokogiri::HTML.parse("<li data-theme = \"a\">#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
               else
@@ -49,11 +49,11 @@ module GitWiki
     end
   
 
-    example "* Drug Type\n> Drug Name | $1.23 (200mg) | tag1 tag2 tag3\n> _Banned Drug Name | $1.23 (200mg) | tag1 tag2 tag3", <<-HTML
+    example "* Drug Type\n> Drug Name | $1.23 (200mg) | tag1 tag2 tag3\n> ~Banned Drug | $1.23 (200mg) | tag2 tag3 tag4", <<-HTML
       <ul data-role="listview" data-inset="false" data-theme="d">
-        <li data-role="list-divider">Putting it together</li>
+        <li data-role="list-divider">Drug Type</li>
         <li>Drug Name<br /><span class=\"drugmeta\"><span class=\"prices\">$1.23 (200mg)</span><span class=\"category\">Other</span><span class=\"subcategory\">tag1 tag2 tag3</span></span></li>
-        <li data-theme = \"a\">Banned Drug Name<br /><span class=\"drugmeta\"><span class=\"prices\">$1.23 (200mg)</span><span class=\"category\">Other</span><span class=\"subcategory\">tag1 tag2 tag3</span></span></li>
+        <li data-theme = \"a\">Banned Drug<br /><span class=\"drugmeta\"><span class=\"prices\">$1.23 (200mg)</span><span class=\"category\">Other</span><span class=\"subcategory\">tag2 tag3 tag4</span></span></li>
       </ul>
     HTML
   

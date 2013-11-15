@@ -77,9 +77,6 @@ mdown_examples:
         
     - |
         [A link](http://ehhapp.org).
-        
-    - |
-        > This is a blockquote
 
     - |
         How to make bulleted lists:
