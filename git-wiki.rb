@@ -143,7 +143,7 @@ module GitWiki
       @page = Page.find_or_create(params[:page])
       new_metadata = @page.metadata.clone
       
-      if @is_editor
+      if @is_editor || !auth_settings["enabled"]
         Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
         @page.update_content(username, params[:body], new_metadata)
       else
