@@ -60,6 +60,10 @@ module GitWiki
     def self.get_template(name)
       GitWiki.const_get(name.to_classname)
     end
+    
+    def self.email_domain
+      GitWiki.config["auth"] && GitWiki.config["auth"]["mail_domain"]
+    end
 
     def self.find_blob(page_name)
       repository.tree/(page_name + extension)
@@ -119,19 +123,21 @@ module GitWiki
       @blob.data
     end
   
-    def update_content(new_body, new_metadata = {})
-      new_metadata["last_modified"] = Time.now
-      new_content = "#{ new_metadata.to_yaml }--- \n#{ new_body }"
+    # Commits the new content to the "master" branch
+    def update_content(author, new_body, new_metadata = {})
+      new_content = prepare_new_content(author, new_body, new_metadata)
       return if new_content == content
       File.open(file_name, "w") { |f| f << new_content }
-      add_to_index_and_commit!
+      add_to_index_and_commit!(author)
     end
     
-    def branch_content(branch_name, new_body, new_metadata = {})
-      new_metadata["last_modified"] = Time.now
-      new_content = "#{ new_metadata.to_yaml }--- \n#{ new_body }"
+    # Creates a new branch of this page's content for this author, if it doesn't already exist
+    # It is named after the author and the page name, e.g. "alex.jones/page_name"
+    # Then, commits the content to this branch
+    def branch_content(author, new_body, new_metadata = {})
+      new_content = prepare_new_content(author, new_body, new_metadata)
       return if new_content == content
-      commit_to_new_branch!(branch_name, new_content)
+      branch_and_commit!(author, new_content)
     end
 
     private
@@ -144,29 +150,44 @@ module GitWiki
         @body = content
       end
     end
+    
+    def prepare_new_content(author, new_body, new_metadata)
+      new_metadata["last_modified"] = Time.now
+      new_metadata["author"] = author
+      "#{ new_metadata.to_yaml }--- \n#{ new_body }"
+    end
   
-    def add_to_index_and_commit!
+    def add_to_index_and_commit!(author)
       Dir.chdir(self.class.repository.working_dir) {
         self.class.repository.add(@blob.name)
       }
-      self.class.repository.commit_index(commit_message)
+      self.class.repository.commit_index(commit_message(author))
     end
     
-    def branch_and_commit!(branch_name, new_content)
-      branch_name = "#{name}.branch_name"
-      index = self.class.repository.index
-      parents = [g.commit(branch_name) || g.commit("master")]
-      index.read_tree(g.commit(branch_name) ? branch_name : "master")
+    # Commits new_content to a topic branch named after the author and name of the page
+    # e.g. "alex.jones/this_page
+    def branch_and_commit!(author, new_content)
+      branch_name = "#{author}/#{name}"
+      repo = self.class.repository
+      index = repo.index
+      parents = [repo.commit(branch_name) || repo.commit("master")]
+      index.read_tree(repo.commit(branch_name) ? branch_name : "master")
       index.add(name + self.class.extension, new_content)
-      index.commit("Proposed edits to #{name} by #{branch_name}", parents, nil, nil, branch_name)
+      author_email = self.class.email_domain && "#{author}@#{self.class.email_domain}"
+      actor = Grit::Actor.new(author, author_email) if author_email
+      index.commit(commit_message(author, true), parents, actor, nil, branch_name)
     end
 
     def file_name
       File.join(self.class.repository.working_dir, name + self.class.extension)
     end
 
-    def commit_message
-      new? ? "Created #{name}" : "Updated #{name}"
+    def commit_message(author, personal_branch = false)
+      if personal_branch
+        "Proposed edits to #{name} by #{author}"
+      else
+        new? ? "#{author} created #{name}" : "#{author} updated #{name}"
+      end
     end
 
     def wiki_link(str)

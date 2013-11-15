@@ -145,8 +145,7 @@ module GitWiki
       
       if @is_editor
         Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
-        new_metadata["author"] = username
-        @page.update_content(params[:body], new_metadata)
+        @page.update_content(username, params[:body], new_metadata)
       else
         # TODO: 
         #   If the user is not an editor, they should commit to a topic branch, and then the 
@@ -154,7 +153,6 @@ module GitWiki
         #   will receive an email telling them to review the changes and approve them or not.
         #   This page provides a clue on how to use grit to commit to a new branch:
         #   http://stackoverflow.com/questions/5839106/a-few-questions-about-grit
-        new_metadata["author"] = username
         @page.branch_content(username, params[:body], new_metadata)
       end
       
