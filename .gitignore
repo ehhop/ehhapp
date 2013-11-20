@@ -1,4 +1,6 @@
 *.log
 *.swp
 config.yaml
+ehhapp-data
+!ehhapp-data/Formulary.md
 *~
