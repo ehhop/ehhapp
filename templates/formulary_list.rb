@@ -2,8 +2,6 @@ module GitWiki
 
   class FormularyList < TemplateTransformation
     def transform
-      puts @nk.to_html
-      puts 'FIGARO'
       # add search bar
       @nk.css('ul:first').each do |ul_nk|
         ul_nk['data-role'] = 'listview'
