@@ -36,9 +36,17 @@ module GitWiki
               tags = $3
               if $1.match(/\s*~(.*)/)
                 name = $1
-                new_node = Nokogiri::HTML.parse("<li data-theme = \"a\">#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
+                if (tags =~ /\w/)
+                    new_node = Nokogiri::HTML.parse("<li data-theme = \"a\">#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
+                else
+                    new_node = Nokogiri::HTML.parse("<li data-theme = \"a\">#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span></span></li>").css('li')
+                end
               else
-                new_node = Nokogiri::HTML.parse("<li>#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
+                if (tags =~ /\w/)
+                    new_node = Nokogiri::HTML.parse("<li>#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
+                else
+                    new_node = Nokogiri::HTML.parse("<li>#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span></span></li>").css('li')
+                end
               end
               next_sib.add_previous_sibling(new_node)
             end
