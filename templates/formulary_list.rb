@@ -2,6 +2,8 @@ module GitWiki
 
   class FormularyList < TemplateTransformation
     def transform
+      puts @nk.to_html
+      puts 'FIGARO'
       # add search bar
       @nk.css('ul:first').each do |ul_nk|
         ul_nk['data-role'] = 'listview'
@@ -12,7 +14,7 @@ module GitWiki
       end
       # form header
       @nk.css('ul li').each do |li_nk|
-        li_nk['data-role'] = 'list-divider' if li_nk.css('strong').length == 0
+        li_nk['data-role'] = 'list-divider'
         li_nk['data-theme'] = 'a'
       end
       # convert all blockquotes to li and move it out
