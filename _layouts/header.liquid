@@ -1,11 +1,16 @@
-<div data-role="header">
+<div data-role="header" class="{% if page.on_branch %}on-branch{% endif %}">
   {% if username and username != '' %}
   <a class="ui-btn-left" href="/logout">Logout <span class="username">{{ username }}</span></a>
   {% else %}
   <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
   {% endif %}
   <h1>{% if page.metadata.title != '' %}{{ page.metadata.title }}{% else %}EHHapp{% endif %}</h1>
-  <a class="ui-btn-right" data-theme="" href="/{{ page.name }}/edit" data-icon="gear">Edit</a>
+  {% if for_approval and page.on_branch %}
+  <a class="ui-btn-right" data-theme="b" href="/{{ page.name }}/approve/{{ page.metadata.author }}" 
+    data-icon="pencil">Edit &amp; Merge</a>
+  {% else %}
+  <a class="ui-btn-right" data-theme="" href="/{{ page.name }}/edit" data-icon="pencil">Edit</a>
+  {% endif %}
   
   {% if just_auth %}
     {% if username and username != '' %}
@@ -13,5 +18,23 @@
     {% else %}
   <div class="ui-body ui-bar-e auth-flash">You have been logged out</div>
     {% endif %}
+  {% endif %}
+  
+  {% if page.on_branch %}
+    {% if for_approval %}
+  <div class="ui-body ui-bar-e on-branch-message">
+    This version
+    {% if page.conflicts %}is{% else %}contains edits{% endif %}
+    by {{ page.metadata.author }}.
+  </div>
+    {% else %}
+  <div class="ui-body ui-bar-e on-branch-message">This version is waiting for approval
+    by {% if page.metadata.owner %}{{ page.metadata.owner }}{% else %}{{ editors | first }}{% endif %}
+  </div>
+    {% endif %}
+  {% elsif for_approval %}
+    <div class="ui-body ui-bar-e on-branch-message">
+      The version you tried to open was merged or deleted
+    </div>
   {% endif %}
 </div><!-- /header -->

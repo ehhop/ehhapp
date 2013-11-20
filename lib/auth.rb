@@ -5,7 +5,24 @@ require 'mail'
 require 'tempfile'
 require 'pstore'
 
+# A quick monkey-patch to always try sending mails first via local SMTP and then sendmail.
+module Mail
+  class Message
+    def deliver_and_fallback!
+      begin
+        deliver!
+      rescue
+        delivery_method :sendmail
+        deliver
+      end
+    end
+  end
+end
+
 module Sinatra
+  
+  # A module that supports all email-related authentication functionality of the EHHapp
+  # It is backed by rack-session-file and a PStore for lockouts, key issue times, etc.
   module EmailAuth
     
     class << self
@@ -19,6 +36,10 @@ module Sinatra
     module Helpers
       def auth_settings
         settings.config["auth"] || {}
+      end
+      
+      def auth_enabled?
+        !!auth_settings["enabled"]
       end
       
       def auth_store
@@ -47,9 +68,17 @@ module Sinatra
       def is_editor?
         !!username && editors.include?(username)
       end
+      
+      def forking_enabled?
+        !!auth_settings["non_editor_forking"]
+      end
+      
+      def plausible_username?(username)
+        !!username.match(auth_settings["username_regexp"] || /^[\w_-]+(\.[\w_-]+)*$/)
+      end
 
       def authorize!(cancel_path = nil)
-        unless authorized? or !auth_settings["enabled"]
+        unless authorized? or !auth_enabled?
           session[:auth_next_for] = request.path_info
           session[:auth_cancel] = cancel_path || request.path_info
           redirect "/login"
@@ -75,15 +104,29 @@ module Sinatra
         mail.subject = "EHHapp Authentication Request"
         mail.body = sprintf(auth_settings["mail_body"], session[:key])
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
-        
-        begin
-          mail.deliver!
-        rescue
-          mail.delivery_method :sendmail
-          mail.deliver
-        end
-        
+        mail.deliver_and_fallback!
         true
+      end
+      
+      def notify_page_owner(page, author)
+        version_url = url("/#{page.name}/#{author}")
+        mail = Mail.new
+        mail.from = auth_settings["mail_from"]
+        mail.to = "#{page.metadata["owner"] || editors.first}@#{auth_settings["mail_domain"]}"
+        mail.subject = "EHHapp changes submitted by #{author} for #{page.name}"
+        mail.body = sprintf(settings.config["fork_notify_message"], author, version_url)
+        mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
+        mail.deliver_and_fallback!
+      end
+      
+      def notify_branch_author(page, author, editor)
+        mail = Mail.new
+        mail.from = auth_settings["mail_from"]
+        mail.to = "#{author}@#{auth_settings["mail_domain"]}"
+        mail.subject = "EHHapp changes accepted by #{editor} for #{page.name}"
+        mail.body = sprintf(settings.config["fork_accepted_message"], editor, url("/#{page.name}"))
+        mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
+        mail.deliver_and_fallback!
       end
       
       # Check that the user is not in within a lockout window (i.e., currently locked out)
@@ -139,6 +182,7 @@ module Sinatra
       
       def auth_locals(and_these = {})
         {
+          :auth_enabled => auth_enabled?,
           :nocache => true,
           :domain => auth_settings["mail_domain"],
           :max_failures => auth_settings["max_failures"],
@@ -175,39 +219,30 @@ module Sinatra
         error = nil
         sent = false
         
-        if params[:key]
-          # We have received a key
-          error = invalid_key?(params[:key])
-          sent = true unless error == "locked_out"
-          login! && redirect(session[:auth_for]) unless error
-        else
-          # We are trying to send a key to an email address
-          auth_for = session[:auth_for] = params[:auth_for]
-          error = "implausible_username" unless params[:email] =~ /^[\w._-]+$/
-          error = "locked_out" if locked_out?(params[:email])
-          unless error
-            # Try to issue; if we can't, it's because a key was issued too recently
-            error = "too_soon" unless issue_key(params[:email])
-            sent = !error
+        if auth_enabled?
+          if params[:key]
+            # We have received a key
+            error = invalid_key?(params[:key])
+            sent = true unless error == "locked_out"
+            login! && redirect(session[:auth_for]) unless error
+          else
+            # We are trying to send a key to an email address
+            auth_for = session[:auth_for] = params[:auth_for]
+            error = "implausible_username" unless plausible_username?(params[:email])
+            error = "locked_out" if locked_out?(params[:email])
+            unless error
+              # Try to issue; if we can't, it's because a key was issued too recently
+              error = "too_soon" unless issue_key(params[:email])
+              sent = !error
+            end
           end
         end
         liquid :login, :locals => auth_locals(:error => error, :auth_cancel => cancel, :auth_for => auth_for, :sent => sent)
       end
       
-      # app.get "/verify_email" do
-      #   # Check if the supplied key matches the one set in the server-side session
-      #   if params[:key] == session[:key]
-      #     login!
-      #   else
-      #     # The key didn't match!  Redirect back to the login page, so they can try again
-      #     # Also display an error telling the user that the key didn't match and how to fix that
-      #     redirect "/login?error=invalid_key"
-      #   end
-      # end
-      
       app.get "/logout" do
         logout! if params[:confirm]
-        liquid :logout, :confirmed => !!params[:confirm]
+        liquid :logout, :locals => {:confirmed => !!params[:confirm]}
       end
       
     end

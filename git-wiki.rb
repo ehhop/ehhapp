@@ -43,6 +43,16 @@ module GitWiki
     def initialize(name)
       @name = name
     end
+    
+    def to_hash
+      {"name" => @name, "type" => self.class.to_s}
+    end
+  end
+  
+  class BranchNotFound < PageNotFound
+  end
+  
+  class InvalidPageName < PageNotFound
   end
   
   class App < Sinatra::Base
@@ -71,8 +81,8 @@ module GitWiki
         end
       end
       
-      def header(page)
-        liquid :header, :layout => false, :locals => locals(page)
+      def header(page, and_these = {})
+        liquid :header, :layout => false, :locals => locals(page, and_these)
       end
             
       def locals(page, and_these = {})
@@ -106,54 +116,70 @@ module GitWiki
     end
 
     # NOTE: this route is a holdover from git-wiki and really isn't being used for anything, yet.
+    # We could use it to list all pages and their outstanding revisions, though.
     get "/pages" do
       @pages = Page.find_all
       liquid :list, :locals => {:pages => @pages.map(&:to_hash), :page => {"name" => "pages"}}
     end
 
-    # TODO: for all of these routes, we should validate if params[:page] is actually
-    #   a plausible page name, and forbid ones with special characters
     # TODO: We should add the ability to specify and edit a "back" destination within page metadata
 
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
-      @page = Page.find_or_create(params[:page])
+      @page = Page.find_or_create(params[:page], username)
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
           :mdown_examples => GitWiki.mdown_examples)
     end
+    
+    get "/:page/approve/:username" do
+      authorize! "/#{params[:page]}"
+      redirect "/#{params[:page]}" unless forking_enabled? && @is_editor
+      @page = Page.find_and_merge(params[:page], params[:username])
+      liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
+          :mdown_examples => GitWiki.mdown_examples, :approving => true)
+    end
 
-    get "/:page" do
+    get "/:page/?:username?" do
       begin
-        @page = Page.find(params[:page])
+        if params[:username]
+          # An editor is looking at somebody else's changes to a page
+          authorize! "/#{params[:page]}/#{params[:username]}"
+          redirect "/#{params[:page]}" unless @is_editor && forking_enabled?
+          for_approval = true
+          @page = Page.find_and_merge(params[:page], params[:username])
+        else
+          # Get the user's unapproved version of the page, if logged in and it exists.
+          # Otherwise, get the current approved version from the master branch
+          @page = Page.find(params[:page], forking_enabled? && username)
+        end
         template = @page.metadata["template"]
         template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
         # TODO: make header able to swap login/logout button to back button set in page metadata
-        liquid template, :locals => locals(@page, :header => header(@page))
+        liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
       rescue PageNotFound => err
-        empty_page = Page.empty(err.name)
-        liquid :empty, :locals => locals(empty_page, :header => header(empty_page))
+        empty_page = Page.empty_as_hash(err.name)
+        liquid :error, :locals => locals(empty_page, :header => header(empty_page), :error => err.to_hash)
       end
     end
 
     post "/:page" do
       authorize! "/#{params[:page]}"
       
-      # TODO: perhaps this should find the latest page according to the HEAD of the 
-      #   git branch of the current user
-      @page = Page.find_or_create(params[:page])
+      @page = Page.find_or_create(params[:page], username)
       new_metadata = @page.metadata.clone
       
-      if @is_editor || !auth_settings["enabled"]
+      if @is_editor || !auth_enabled?
         Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
-        @page.update_content(username, params[:body], new_metadata)
-      else
-        # TODO: 
-        #   If the user is not an editor, they should commit to a topic branch, and then the 
-        #   owner of the page
-        #   will receive an email telling them to review the changes and approve them or not.
-        #   This page provides a clue on how to use grit to commit to a new branch:
-        #   http://stackoverflow.com/questions/5839106/a-few-questions-about-grit
+        @page.update_content(username, params[:body], new_metadata, params[:approving])
+        notify_branch_author(@page, params[:approving], username) if params[:approving]
+      elsif forking_enabled?
+        # If the user is not an editor, the commit is made to a topic branch
+        new_metadata["template"] = params[:template] if params[:template]
         @page.branch_content(username, params[:body], new_metadata)
+        notify_page_owner(@page, username)
+      else
+        error = {"name" => @page.name, "type" => "NotAnEditor"}
+        liquid :error, :locals => locals(empty_page, :header => header(empty_page), :error => error)
       end
       
       redirect "/#{@page}"

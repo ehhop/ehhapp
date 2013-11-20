@@ -20,22 +20,25 @@ auth:
     mail_from: example@example.com
     # Where will they bounce to (when people enter in invalid addresses)?
     mail_bounce: example@example.com
+    # Usernames need to match this regexp.  One detail is that usernames also need to be valid as
+    # part of a git reference: https://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
+    username_regexp: !ruby/regexp /^[\w_-]+(\.[\w_-]+)*$/
 
     # What to put in the email message
     mail_body: |
         Hello there!
-
+        
         You (or somebody claiming to be you) is attempting to edit 
         the EHHapp (at http://ehhapp.org).  If this was you, please 
         return to the login screen and enter this six-digit code:
-
+        
         %s
-
+        
         ...and then you will have access to page editor!
-
+        
         Cheers,
         The EHHapp team
-        
+
     # Where do we want to store lockouts, attempts, etc.?
     # It is stored in a Ruby PStore, by default in Dir.tmpdir, but this can be changed
     # to another location by specifying an absolute path here
@@ -59,6 +62,37 @@ auth:
     editors:
     - example.name
     
+    # Can non-editors save changes to topic branches?
+    non_editor_forking: no
+
+
+fork_notify_message: |
+    Guess what!
+    
+    %s has submitted changes to a page that you own 
+    on the EHHapp.  To review them, click on the following link:
+    
+    %s
+    
+    and you will be able to view, edit, and approve them.
+    
+    You *must* approve them before they will be available publicly to
+    other users of the EHHapp.
+    
+    Cheers,
+    The EHHapp team
+
+fork_accepted_message: |
+    Great news!
+    
+    %s has approved changes that you submitted 
+    to the EHHapp.  You will be able to see the final completed page
+    at the following link:
+    
+    %s
+    
+    Cheers,
+    The EHHapp team
 
 # Some relevant examples to help people learn Markdown quickly.
 
