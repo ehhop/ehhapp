@@ -48,13 +48,21 @@
 
 /** GENERAL ELEMENTS **/
 
-.auth-flash {
+.auth-flash, .on-branch-message {
   position: absolute;
   top: 0.2em;
   left: 10%;
   right: 10%;
   text-align: center;
   z-index: 1000;
+}
+
+.on-branch-message {
+  top: 2.6em;
+}
+
+.ui-header.on-branch ~ .ui-content {
+  padding-top: 42px;
 }
 
 .no-page-message {

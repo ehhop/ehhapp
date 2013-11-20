@@ -1,3 +1,23 @@
+require 'yaml'
+
+class Hash
+  # When we serialize to YAML in this app, we want to keep hash
+  # keys in alphabetical order wherever possible
+  # (it facilitates branching and merging them later)
+  def to_yaml(opts = {})
+    YAML::quick_emit(self, opts) do |out|
+      # Ordinarily this would be out.map(taguri, to_yaml_style) but
+      # I do not want the !ruby:Object/Hash taguri in the output
+      out.map(nil, to_yaml_style) do |map|
+        keys.sort.each do |k|
+          v = self[k]
+          map.add(k, v)
+        end
+      end
+    end
+  end
+end
+
 class String
   def undent
     gsub(/^.{#{slice(/^ +/).length}}/, '')

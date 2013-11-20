@@ -1,0 +1,52 @@
+{{ header }}
+
+<div data-role="content">
+
+{% case error.type %}
+{% when "GitWiki::PageNotFound" %}
+
+<h1>Page not found</h1>
+<div id="#content">
+  <p class="one-button-message">
+    No page yet exists at <strong>/{{ page.name | escape }}</strong>.
+  </p>
+  <a href="/{{ page.name }}/edit" data-role="button">Create this page</a>
+</div>
+
+{% when "GitWiki::BranchNotFound" %}
+
+<h1>Version not found</h1>
+<div id="#content">
+  <p class="one-button-message">
+    The version of the page you are trying to view has already been merged.
+  </p>
+  <p>
+    <a href="/{{ page.name }}">View the most recent version of this page.</a>
+  </p>
+</div>
+
+{% when "GitWiki::InvalidPageName" %}
+
+<h1>Invalid page URL</h1>
+<div id="#content">
+  <p class="one-button-message">
+    You cannot create a page at this URL.  Page URLs can only contain letters,
+    numbers, hyphens, and underscores.
+  </p>
+  <a href="/" data-role="button">Return home</a>
+</div>
+
+{% when "NotAnEditor" %}
+
+<h1>Unauthorized Access</h1>
+<div id="#content">
+  <p class="one-button-message">
+    Sorry, you have not been given privileges to edit this site.  Please contact
+    the owners of the site to configure editing by non-editors, or add you as an editor.
+  </p>
+  <a href="/" data-role="button">Return home</a>
+</div>
+
+{% endcase %}
+
+</div><!-- /content -->

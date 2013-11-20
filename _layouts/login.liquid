@@ -6,6 +6,12 @@
 <div data-role="content">
   
 <form method="POST" action="/login" class="login-form">
+  {% unless auth_enabled %}
+  <div class="ui-body ui-body-e">
+    <strong>Auth is not enabled.</strong>  Please enable it in config.yaml.
+  </div>
+  {% endunless %}
+  
   {% if error %}
   <div class="ui-body ui-body-e">
     {% case error %}

@@ -1,6 +1,11 @@
 <div data-role="header">
-  <a data-icon="back" {% if page.new %}data-rel="back"{% else %}href="/{{ page.name | escape }}"{% endif %}>Back</a>
-  <h1>{% if page.new %}Creating{% else %}Editing{% endif %} /{{ page.name }}</h1>
+  <a data-icon="back"
+    {% if page.new %}
+      data-rel="back"
+    {% else %}
+      href="/{{ page.name | escape }}{% if approving %}/{{ page.metadata.author | escape }}{% endif %}"
+    {% endif %}>Back</a>
+  <h1>{% if page.new %}Creating{% elsif approving %}Merging{% else %}Editing{% endif %} /{{ page.name }}</h1>
   
   {% if just_auth %}
     {% if username and username != '' %}
@@ -12,6 +17,12 @@
 </div>
   
 <div data-role="content" class="page-editor">
+  
+{% if page.conflicts %}
+  <div class="ui-body ui-bar-e">
+    Some recent edits from the approved version could not be merged.  You should <a href="/{{ page.name }}" target="_blank">review the approved version</a> carefully.
+  </div>
+{% endif %}
   
 <div class="editor-form-cont">
   <form method="POST" action="/{{ page.name }}" class="editor-form">
@@ -57,9 +68,18 @@
       </p>
       {% endunless %}
     </div>
+    {% if approving %}
+    <input type="hidden" name="approving" value="{{ page.metadata.author | escape }}"/>
+    {% endif %}
     <fieldset class="ui-grid-a">
       <div class="ui-block-a"><a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a></div>
-      <div class="ui-block-b"><input type="submit" data-theme="b" value="Save edits"/></div>	   
+      <div class="ui-block-b">
+        {% if approving %}
+        <input type="submit" data-theme="b" value="Save &amp; merge"/>
+        {% else %}
+        <input type="submit" data-theme="b" value="Save edits"/>
+        {% endif %}
+      </div>	   
     </fieldset>
   </form>
 </div>
