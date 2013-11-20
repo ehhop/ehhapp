@@ -49,7 +49,7 @@
       <label for="{{ page.name | escape }}-owner">Page owner</label>
       <select name="owner" id="{{ page.name | escape }}-owner" class="select-editor">
         {% for ed in editors %}
-        <option value="{{ ed }}"{% if page.metadata.editor == ed %} selected{% endif %}>{{ ed }}</option>
+        <option value="{{ ed }}"{% if page.metadata.owner == ed %} selected{% endif %}>{{ ed }}</option>
         {% endfor %}
       </select>
     </div>
