@@ -1,4 +1,5 @@
 *.log
 *.swp
 config.yaml
+ehhapp-data
 *~
