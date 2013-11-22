@@ -1,6 +1,6 @@
 module GitWiki
 
-class DropdownList < TemplateTransformation
+class CollapsibleList < TemplateTransformation
   def transform
 
     collapsible_set = Nokogiri::HTML.parse("<div data-role=\"collapsible-set\"></div>").at_css('div')

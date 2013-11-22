@@ -18,8 +18,6 @@ class RedirectList < TemplateTransformation
 	    <li><a href="/target">This is link 3</a></li>
       </ul>		
   HTML
-  
  
 end
-
 end

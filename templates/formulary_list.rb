@@ -2,12 +2,19 @@ module GitWiki
 
   class FormularyList < TemplateTransformation
     def transform
+      # set placeholder
+      placeholder = 'My patient needs...'
+      tmp_pt = @nk.at_css('*')
+      if tmp_pt.name == 'p'
+        placeholder = tmp_pt.content
+      end
+
       # add search bar
       @nk.css('ul:first').each do |ul_nk|
         ul_nk['data-role'] = 'listview'
         ul_nk['data-inset'] = 'false'
         ul_nk['data-filter'] = 'true'
-        ul_nk['data-filter-placeholder'] = 'My patient needs...'
+        ul_nk['data-filter-placeholder'] = placeholder
         ul_nk['data-theme'] = 'd'
       end
       # form header
