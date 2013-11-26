@@ -7,6 +7,7 @@ module GitWiki
       tmp_pt = @nk.at_css('*')
       if tmp_pt.name == 'p'
         placeholder = tmp_pt.content
+        tmp_pt.unlink
       end
 
       # add search bar
