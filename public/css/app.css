@@ -227,6 +227,11 @@
   line-height: normal;
 }
 
+.redirect-list .secondary {
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
 /* CSS optimized for wider screens (tablets, desktop screens) */
 
 @media (min-width: 450px) {

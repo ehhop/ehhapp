@@ -21,6 +21,14 @@ class RedirectList < TemplateTransformation
         if a_nk && a_nk['href'] =~ /^tel:/
           li_nk['data-icon'] = 'phone'
         end
+        if a_nk && (parts = a_nk.content.split('|', 2))
+          span_nk = Nokogiri::XML::Node.new "span", @nk
+          span_nk.content = parts[1]
+          span_nk["class"] = "secondary"
+          a_nk.content = parts[0]
+          a_nk.add_child(Nokogiri::XML::Node.new "br", @nk)
+          a_nk.add_child(span_nk)
+        end
       end
     end
     custom_styled = @nk.to_html
