@@ -73,7 +73,7 @@ MD
       <ul data-role="listview" data-inset="true" data-filter="true" class="redirect-list"
         data-filter-placeholder="Putting it all together.">
         <li><a href="/target">This is a link</a></li>
-        <li><a href="/target2">This is link<br/><span class="secondary">with secondary text</span></a></li>
+        <li><a href="/target2">This is a link<br/><span class="secondary">with secondary text</span></a></li>
         <li data-icon="phone"><a href="tel:+18773724161">This link places a call<br/>
           <span class="secondary">to 877-372-4161</span></a></li>
       </ul> 	
