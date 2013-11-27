@@ -222,7 +222,7 @@
   display: table-cell;
 }
 
-.redirect-list .ui-btn-text a {
+.redirect-list .ui-btn-text a.ui-link-inherit {
   white-space: normal;
   line-height: normal;
 }
