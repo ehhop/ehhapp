@@ -33,14 +33,50 @@ class RedirectList < TemplateTransformation
     end
     custom_styled = @nk.to_html
   end
+  
+  md = <<-MD
+Text at the top becomes the search prompt.
 
-  example "The first line specifies the placeholder in the search bar.\n\nIf you also want text at the top,\nbe sure to put two returns between the first line\nand the text, and the list and the text.\n\n* [This is a link](/target)\n* [This is link 2](/target)\n* [This is link 3](/target)", <<-HTML
-      <p>If you also want text at the top, be sure to put two returns between the first line and the text, and the list and the text.</p>
-      <ul data-role="listview" data-inset="true" data-filter="true" data-filter="true" data-filter-placeholder="The first line specifies the placeholder in the search bar.">
-	    <li><a href="/target">This is a link</a></li>
-	    <li><a href="/target">This is link 2</a></li>
-	    <li><a href="/target">This is link 3</a></li>
-      </ul>		
+* [This is a link](/target)
+MD
+
+  example md, <<-HTML
+      <ul data-role="listview" data-inset="true" data-filter="true" class="redirect-list"
+        data-filter-placeholder="Text at the top becomes the search prompt.">
+        <li><a href="/target">This is a link</a></li>
+      </ul> 	
+  HTML
+
+  md = <<-MD
+* [This link places a call | 
+    to 877-372-4161](tel:+18773724161)
+MD
+
+  example md, <<-HTML
+      <ul data-role="listview" data-inset="true" class="redirect-list">
+        <li data-icon="phone"><a href="tel:+18773724161">This link places a call<br/>
+          <span class="secondary">to 877-372-4161</span></a></li>
+      </ul> 	
+  HTML
+  
+  md = <<-MD
+Putting it all together.
+
+* [This is a link](/target)
+* [This is a link | 
+    with secondary text](/target2)
+* [This link places a call | 
+    to 877-372-4161](tel:+18773724161)
+MD
+
+  example md, <<-HTML
+      <ul data-role="listview" data-inset="true" data-filter="true" class="redirect-list"
+        data-filter-placeholder="Putting it all together.">
+        <li><a href="/target">This is a link</a></li>
+        <li><a href="/target2">This is link<br/><span class="secondary">with secondary text</span></a></li>
+        <li data-icon="phone"><a href="tel:+18773724161">This link places a call<br/>
+          <span class="secondary">to 877-372-4161</span></a></li>
+      </ul> 	
   HTML
  
 end

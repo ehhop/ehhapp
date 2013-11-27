@@ -152,6 +152,10 @@
   margin-top: 30px;
 }
 
+.page-editor .example-pair pre.code {
+  overflow-x: auto;
+}
+
 .page-editor .content-preview {
   margin: 30px;
 }
