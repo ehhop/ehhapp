@@ -222,6 +222,11 @@
   display: table-cell;
 }
 
+.redirect-list .ui-btn-text a {
+  white-space: normal;
+  line-height: normal;
+}
+
 /* CSS optimized for wider screens (tablets, desktop screens) */
 
 @media (min-width: 450px) {
