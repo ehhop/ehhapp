@@ -16,18 +16,30 @@ class RedirectList < TemplateTransformation
       ul_nk['data-inset'] = 'true'
       ul_nk['data-filter'] = 'true'
       ul_nk['data-filter-placeholder'] = placeholder
+      
+      tag_next_li = nil
       ul_nk.css('li').each do |li_nk|
         a_nk = li_nk.css('a:first').first
-        if a_nk && a_nk['href'] =~ /^tel:/
-          li_nk['data-icon'] = 'phone'
-        end
-        if a_nk && (parts = a_nk.content.split('|', 2))
-          span_nk = Nokogiri::XML::Node.new "span", @nk
-          span_nk.content = parts[1]
-          span_nk["class"] = "secondary"
-          a_nk.content = parts[0]
-          a_nk.add_child(Nokogiri::XML::Node.new "br", @nk)
-          a_nk.add_child(span_nk)
+        if a_nk
+          li_nk['data-icon'] = 'phone' if a_nk['href'] =~ /^tel:/
+          parts = a_nk.content.split('|', 2)
+          if parts.length > 1
+            span_nk = Nokogiri::XML::Node.new "span", @nk
+            span_nk.content = parts[1]
+            span_nk["class"] = "secondary"
+            a_nk.content = parts[0]
+            a_nk.add_child(Nokogiri::XML::Node.new("br", @nk))
+            a_nk.add_child(span_nk)
+          end
+          if tag_next_li
+            span_nk = Nokogiri::XML::Node.new "span", @nk
+            span_nk.content = tag_next_li
+            span_nk["class"] = "category"
+            a_nk.add_child(span_nk)
+          end
+        else
+          li_nk['data-role'] = 'list-divider'
+          tag_next_li = li_nk.content
         end
       end
     end
@@ -60,9 +72,20 @@ MD
   HTML
   
   md = <<-MD
+* This becomes a header.
+MD
+
+  example md, <<-HTML
+      <ul data-role="listview" data-inset="true" class="redirect-list">
+        <li data-role="list-divider">This becomes a header.</li>
+      </ul> 	
+  HTML
+  
+  md = <<-MD
 Putting it all together.
 
 * [This is a link](/target)
+* This becomes a header.
 * [This is a link | 
     with secondary text](/target2)
 * [This link places a call | 
@@ -73,6 +96,7 @@ MD
       <ul data-role="listview" data-inset="true" data-filter="true" class="redirect-list"
         data-filter-placeholder="Putting it all together.">
         <li><a href="/target">This is a link</a></li>
+        <li data-role="list-divider">This becomes a header.</li>
         <li><a href="/target2">This is a link<br/><span class="secondary">with secondary text</span></a></li>
         <li data-icon="phone"><a href="tel:+18773724161">This link places a call<br/>
           <span class="secondary">to 877-372-4161</span></a></li>
