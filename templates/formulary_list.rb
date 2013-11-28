@@ -38,25 +38,24 @@ module GitWiki
         category = li_nk.content
         if li_nk.next_sibling and !li_nk.next_sibling.get_attribute('data-role')
             next_sib = li_nk.next_sibling
-            next_sib.content.gsub /^([^\|]*)\|([^\|]*)\|([^\|]*)$/ do
-              name = $1
-              price = $2
-              tags = $3
-              if $1.match(/\s*~(.*)/)
-                name = $1
-                if (tags =~ /\w/)
-                    new_node = Nokogiri::HTML.parse("<li data-theme = \"a\">#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
+            split_res = next_sib.content.split(/[\n]/)
+            split_res.each do |item|
+              new_res = item.split('|')
+              if new_res.length
+                if new_res[0].match(/\s*~(.*)/)
+                  new_node = Nokogiri::HTML.parse("<li data-theme = \"a\"></li>").at_css('li')
+                  new_node.content = $1
                 else
-                    new_node = Nokogiri::HTML.parse("<li data-theme = \"a\">#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span></span></li>").css('li')
+                  new_node = Nokogiri::HTML.parse("<li></li>").at_css('li')
+                  new_node.content = new_res[0]
                 end
-              else
-                if (tags =~ /\w/)
-                    new_node = Nokogiri::HTML.parse("<li>#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{tags}</span></span></li>").css('li')
-                else
-                    new_node = Nokogiri::HTML.parse("<li>#{name}<br /><span class=\"drugmeta\"><span class=\"prices\">#{price}</span><span class=\"category\">#{category}</span></span></li>").css('li')
+                if new_res.length == 2
+                  new_node.add_child(Nokogiri::HTML::fragment("<br /><span class=\"drugmeta\"><span class=\"prices\">#{new_res[1]}</span><span class=\"category\">#{category}</span></span>"))
+                elsif new_res.length == 3
+                  new_node.add_child(Nokogiri::HTML::fragment("<br /><span class=\"drugmeta\"><span class=\"prices\">#{new_res[1]}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{new_res[2]}</span></span>"))
                 end
+                next_sib.add_previous_sibling(new_node)
               end
-              next_sib.add_previous_sibling(new_node)
             end
             next_sib.unlink
         end     
