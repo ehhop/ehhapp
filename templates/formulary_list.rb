@@ -55,7 +55,7 @@ module GitWiki
                 new_node.at_css('.prices').content = new_res[1]
                 new_node.at_css('.category').content = category
                 if new_res.length >= 3
-                  subcat_nk = Nokogiri::HTML.fragment('<span class="subcategory" />')
+                  subcat_nk = Nokogiri::HTML.fragment('<span class="subcategory" />').at_css('span')
                   subcat_nk.content = new_res[2]
                   new_node.at_css('.drugmeta').add_child(subcat_nk)
                 end
