@@ -37,32 +37,32 @@ module GitWiki
       @nk.css('li[data-role=list-divider]').each do |li_nk|
         category = li_nk.content
         if li_nk.next_sibling and !li_nk.next_sibling.get_attribute('data-role')
-            next_sib = li_nk.next_sibling
-            split_res = next_sib.content.split("\n")
-            split_res.each do |item|
-              new_res = item.split('|')
-              if new_res[0].match(/\s*~(.*)/)
-                new_node = Nokogiri::HTML.fragment('<li data-theme="a" />').at_css('li')
-                new_node.content = $1
-              else
-                new_node = Nokogiri::HTML.fragment("<li />").at_css('li')
-                new_node.content = new_res[0]
-              end
-              if new_res.length >= 2
-                drugmeta = '<br /><span class="drugmeta"><span class="prices"/><span class="category"/></span>'
-                drugmeta_nk = Nokogiri::HTML.fragment(drugmeta)
-                new_node.add_child(drugmeta_nk)
-                new_node.at_css('.prices').content = new_res[1]
-                new_node.at_css('.category').content = category
-                if new_res.length >= 3
-                  subcat_nk = Nokogiri::HTML.fragment('<span class="subcategory" />').at_css('span')
-                  subcat_nk.content = new_res[2]
-                  new_node.at_css('.drugmeta').add_child(subcat_nk)
-                end
-              end
-              next_sib.add_previous_sibling(new_node)
+          next_sib = li_nk.next_sibling
+          split_res = next_sib.content.split("\n")
+          split_res.each do |item|
+            new_res = item.split('|')
+            if new_res[0].match(/\s*~(.*)/)
+              new_node = Nokogiri::HTML.fragment('<li data-theme="a" />').at_css('li')
+              new_node.content = $1
+            else
+              new_node = Nokogiri::HTML.fragment("<li />").at_css('li')
+              new_node.content = new_res[0]
             end
-            next_sib.unlink
+            if new_res.length >= 2
+              drugmeta = '<br /><span class="drugmeta"><span class="prices"/><span class="category"/></span>'
+              drugmeta_nk = Nokogiri::HTML.fragment(drugmeta)
+              new_node.add_child(drugmeta_nk)
+              new_node.at_css('.prices').content = new_res[1]
+              new_node.at_css('.category').content = category
+              if new_res.length >= 3
+                subcat_nk = Nokogiri::HTML.fragment('<span class="subcategory" />').at_css('span')
+                subcat_nk.content = new_res[2]
+                new_node.at_css('.drugmeta').add_child(subcat_nk)
+              end
+            end
+            next_sib.add_previous_sibling(new_node)
+          end
+          next_sib.unlink
         end     
       end
       @nk.to_html
