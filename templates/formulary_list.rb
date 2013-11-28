@@ -38,24 +38,29 @@ module GitWiki
         category = li_nk.content
         if li_nk.next_sibling and !li_nk.next_sibling.get_attribute('data-role')
             next_sib = li_nk.next_sibling
-            split_res = next_sib.content.split(/[\n]/)
+            split_res = next_sib.content.split("\n")
             split_res.each do |item|
               new_res = item.split('|')
-              if new_res.length
-                if new_res[0].match(/\s*~(.*)/)
-                  new_node = Nokogiri::HTML.parse("<li data-theme = \"a\"></li>").at_css('li')
-                  new_node.content = $1
-                else
-                  new_node = Nokogiri::HTML.parse("<li></li>").at_css('li')
-                  new_node.content = new_res[0]
-                end
-                if new_res.length == 2
-                  new_node.add_child(Nokogiri::HTML::fragment("<br /><span class=\"drugmeta\"><span class=\"prices\">#{new_res[1]}</span><span class=\"category\">#{category}</span></span>"))
-                elsif new_res.length == 3
-                  new_node.add_child(Nokogiri::HTML::fragment("<br /><span class=\"drugmeta\"><span class=\"prices\">#{new_res[1]}</span><span class=\"category\">#{category}</span><span class=\"subcategory\">#{new_res[2]}</span></span>"))
-                end
-                next_sib.add_previous_sibling(new_node)
+              if new_res[0].match(/\s*~(.*)/)
+                new_node = Nokogiri::HTML.fragment('<li data-theme="a" />').at_css('li')
+                new_node.content = $1
+              else
+                new_node = Nokogiri::HTML.fragment("<li />").at_css('li')
+                new_node.content = new_res[0]
               end
+              if new_res.length >= 2
+                drugmeta = '<br /><span class="drugmeta"><span class="prices"/><span class="category"/></span>'
+                drugmeta_nk = Nokogiri::HTML.fragment(drugmeta)
+                new_node.add_child(drugmeta_nk)
+                new_node.at_css('.prices').content = new_res[1]
+                new_node.at_css('.category').content = category
+                if new_res.length >= 3
+                  subcat_nk = Nokogiri::HTML.fragment('<span class="subcategory" />')
+                  subcat_nk.content = new_res[2]
+                  new_node.at_css('.drugmeta').add_child(subcat_nk)
+                end
+              end
+              next_sib.add_previous_sibling(new_node)
             end
             next_sib.unlink
         end     
@@ -63,12 +68,29 @@ module GitWiki
       @nk.to_html
     end
   
+    md_example = <<-MD
+* Drug Type
+> Drug Name | $1.23 (200mg) | tag1 tag2 tag3
+> ~Banned Drug | $1.23 (200mg) | tag2 tag3 tag4
+    MD
 
-    example "* Drug Type\n> Drug Name | $1.23 (200mg) | tag1 tag2 tag3\n> ~Banned Drug | $1.23 (200mg) | tag2 tag3 tag4", <<-HTML
+    example md_example, <<-HTML
       <ul data-role="listview" data-inset="false" data-theme="d">
         <li data-role="list-divider">Drug Type</li>
-        <li>Drug Name<br /><span class=\"drugmeta\"><span class=\"prices\">$1.23 (200mg)</span><span class=\"category\">Other</span><span class=\"subcategory\">tag1 tag2 tag3</span></span></li>
-        <li data-theme = \"a\">Banned Drug<br /><span class=\"drugmeta\"><span class=\"prices\">$1.23 (200mg)</span><span class=\"category\">Other</span><span class=\"subcategory\">tag2 tag3 tag4</span></span></li>
+        <li>Drug Name<br />
+          <span class="drugmeta">
+            <span class="prices">$1.23 (200mg)</span>
+            <span class="category">Other</span>
+            <span class="subcategory">tag1 tag2 tag3</span>
+          </span>
+        </li>
+        <li data-theme="a">Banned Drug<br />
+          <span class="drugmeta">
+            <span class="prices">$1.23 (200mg)</span>
+            <span class="category">Other</span>
+            <span class="subcategory">tag2 tag3 tag4</span>
+          </span>
+        </li>
       </ul>
     HTML
   
