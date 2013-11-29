@@ -41,6 +41,7 @@ module GitWiki
           split_res = next_sib.content.split("\n")
           split_res.each do |item|
             new_res = item.split('|')
+            next unless new_res.length > 0
             if new_res[0].match(/\s*~(.*)/)
               new_node = Nokogiri::HTML.fragment('<li data-theme="a" />').at_css('li')
               new_node.content = $1
