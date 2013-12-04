@@ -10,7 +10,8 @@ module GitWiki
       'title' => '',
       'author' => nil,
       'last_modified' => nil,
-      'owner' => nil
+      'owner' => nil,
+      'backlink' => nil
     }
     
     EMPTY_AS_HASH = {
@@ -29,7 +30,9 @@ module GitWiki
   
     def self.find_all
       return [] if repository.tree.contents.empty?
-      repository.tree.contents.collect { |blob| new(blob).to_hash }
+      repository.tree.contents.collect do |blob|
+        if block_given? then yield new(blob); else new(blob); end
+      end
     end
 
     def self.find(name, author = nil)
@@ -137,6 +140,13 @@ module GitWiki
         "new" => new?,
         "conflicts" => conflicts
       })
+    end
+    
+    def metadata_hash
+      {
+        "name" => name,
+        "metadata" => metadata
+      }
     end
 
     def new?

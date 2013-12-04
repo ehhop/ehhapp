@@ -44,6 +44,16 @@
         {% endfor %}
       </select>
     </div>
+    <div data-role="fieldcontain">
+      <label for="{{ page.name | escape }}-backlink">Back link</label>
+      <select name="backlink" id="{{ page.name | escape }}-backlink" class="select-backlink">
+        <option value=""{% if !page.metadata.backlink or page.metadata.backlink == "" %} selected{% endif %}
+            >login/logout button</option>
+        {% for p in pages %}
+        <option value="{{ p.name }}"{% if page.metadata.backlink == p.name %} selected{% endif %}>{{ p.metadata.title }} - /{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
     {% if is_editor %}
     <div data-role="fieldcontain">
       <label for="{{ page.name | escape }}-owner">Page owner</label>

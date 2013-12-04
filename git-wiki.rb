@@ -118,8 +118,8 @@ module GitWiki
     # NOTE: this route is a holdover from git-wiki and really isn't being used for anything, yet.
     # We could use it to list all pages and their outstanding revisions, though.
     get "/pages" do
-      @pages = Page.find_all
-      liquid :list, :locals => {:pages => @pages.map(&:to_hash), :page => {"name" => "pages"}}
+      @pages = Page.find_all(&:metadata_hash)
+      liquid :list, :locals => {:pages => @pages, :page => {"name" => "pages"}}
     end
 
     # TODO: We should add the ability to specify and edit a "back" destination within page metadata
@@ -127,16 +127,18 @@ module GitWiki
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page], username)
-      liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
-          :mdown_examples => GitWiki.mdown_examples)
+      @pages = Page.find_all(&:metadata_hash)
+      liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
+          :pages => @pages, :mdown_examples => GitWiki.mdown_examples)
     end
     
     get "/:page/approve/:username" do
       authorize! "/#{params[:page]}"
       redirect "/#{params[:page]}" unless forking_enabled? && @is_editor
       @page = Page.find_and_merge(params[:page], params[:username])
+      @pages = Page.find_all(&:metadata_hash)
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
-          :mdown_examples => GitWiki.mdown_examples, :approving => true)
+          :pages => @pages, :mdown_examples => GitWiki.mdown_examples, :approving => true)
     end
 
     get "/:page/?:username?" do
