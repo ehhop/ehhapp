@@ -69,7 +69,7 @@
   margin-bottom: 4em;
 }
 
-.ui-header .username {
+.ui-header .wide-only {
   display: none;
 }
 
@@ -249,7 +249,7 @@
 /* CSS optimized for wider screens (tablets, desktop screens) */
 
 @media (min-width: 450px) {
-  .ui-header .username {
+  .ui-header .wide-only {
     display: inline;
   }
   

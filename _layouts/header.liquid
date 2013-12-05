@@ -3,7 +3,7 @@
     <a class="ui-btn-left" data-icon="back" href="/{{ page.metadata.backlink }}">Back</a>
   {% else %}
     {% if username and username != '' %}
-    <a class="ui-btn-left" href="/logout">Logout <span class="username">{{ username }}</span></a>
+    <a class="ui-btn-left" href="/logout">Logout <span class="username wide-only">{{ username }}</span></a>
     {% else %}
     <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
     {% endif %}

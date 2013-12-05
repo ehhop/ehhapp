@@ -180,6 +180,8 @@ module Sinatra
         session[:just_auth] = true
       end
       
+      def footer_links; settings.config["footer_links"]; end
+      
       def auth_locals(and_these = {})
         {
           :auth_enabled => auth_enabled?,
@@ -188,7 +190,7 @@ module Sinatra
           :max_failures => auth_settings["max_failures"],
           :sent_to => session[:username],
           :just_auth => session[:just_auth],
-          :footer_links => settings.config["footer_links"]
+          :footer_links => footer_links
         }.merge(and_these)
       end
     end
@@ -243,7 +245,7 @@ module Sinatra
       
       app.get "/logout" do
         logout! if params[:confirm]
-        liquid :logout, :locals => {:confirmed => !!params[:confirm]}
+        liquid :logout, :locals => {:footer_links => footer_links, :confirmed => !!params[:confirm]}
       end
       
     end
