@@ -65,6 +65,12 @@ auth:
     # Can non-editors save changes to topic branches?
     non_editor_forking: no
 
+footer_links:
+    - {icon: "info", title: "FAQ", page: "FAQ"}
+    - {icon: "phone", title: "Contact", page: "phone"}
+    - {icon: "fahome", title: "Home", page: "index"}
+    - {icon: "faplus", title: "Rx", page: "Formulary"}
+    - {icon: "file", title: "Docs", page: "documents"}
 
 fork_notify_message: |
     Guess what!

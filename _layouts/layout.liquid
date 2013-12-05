@@ -23,26 +23,12 @@
   <div data-role="footer" data-id="nav" data-position="fixed">
     <div data-role="navbar">
       <ul>
+        {% for f in footer_links %}
         <li>
-          <a href="/FAQ" data-icon="info" data-prefetch
-            {% if page.name == 'FAQ' %}class="ui-state-persist ui-btn-active"{% endif %}>FAQ</a>
+          <a href="/{{ f.page | escape }}" data-icon="{{ f.icon | escape }}" data-prefetch
+            {% if page.name == f.page %}class="ui-state-persist ui-btn-active"{% endif %}>{{ f.title | escape }}</a>
         </li>
-        <li>
-          <a href="/phone" data-icon="phone" data-prefetch
-            {% if page.name == 'phone' %}class="ui-state-persist ui-btn-active"{% endif %}>Contact</a>
-        </li>
-        <li>
-          <a href="/index" data-icon="fahome" data-iconpos="notext" data-prefetch
-            {% if page.name == 'index' %}class="ui-state-persist ui-btn-active"{% endif %}>Home</a>
-        </li>
-        <li>
-          <a href="/Formulary" data-icon="faplus" data-prefetch
-            {% if page.name == 'Formulary' %}class="ui-state-persist ui-btn-active"{% endif %}>Rx</a>
-        </li>
-        <li>
-          <a href="/documents" data-icon="file" data-prefetch
-            {% if page.name == 'documents' %}class="ui-state-persist ui-btn-active"{% endif %}>Docs</a>
-        </li>
+        {% endfor %}
       </ul>
     </div><!-- /navbar -->
   </div>

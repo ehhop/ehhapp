@@ -187,7 +187,8 @@ module Sinatra
           :domain => auth_settings["mail_domain"],
           :max_failures => auth_settings["max_failures"],
           :sent_to => session[:username],
-          :just_auth => session[:just_auth]
+          :just_auth => session[:just_auth],
+          :footer_links => settings.config["footer_links"]
         }.merge(and_these)
       end
     end

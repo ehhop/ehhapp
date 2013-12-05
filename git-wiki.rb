@@ -93,7 +93,8 @@ module GitWiki
           :nocache => false,
           :is_editor => @is_editor,
           :templates => templates,
-          :editors => editors
+          :editors => editors,
+          :footer_links => settings.config["footer_links"]
         }.merge(and_these)
       end
     end
@@ -127,18 +128,16 @@ module GitWiki
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page], username)
-      @pages = Page.find_all(&:metadata_hash)
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
-          :pages => @pages, :mdown_examples => GitWiki.mdown_examples)
+          :mdown_examples => GitWiki.mdown_examples)
     end
     
     get "/:page/approve/:username" do
       authorize! "/#{params[:page]}"
       redirect "/#{params[:page]}" unless forking_enabled? && @is_editor
       @page = Page.find_and_merge(params[:page], params[:username])
-      @pages = Page.find_all(&:metadata_hash)
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
-          :pages => @pages, :mdown_examples => GitWiki.mdown_examples, :approving => true)
+          :mdown_examples => GitWiki.mdown_examples, :approving => true)
     end
 
     get "/:page/?:username?" do
