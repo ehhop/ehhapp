@@ -25,7 +25,7 @@
 {% endif %}
   
 <div class="editor-form-cont">
-  <form method="POST" action="/{{ page.name }}" class="editor-form">
+  <form method="post" action="/{{ page.name }}" enctype="multipart/form-data" data-ajax="false" accept-charset="utf-8">
     <p>
       <label for="{{ page.name | escape }}-title" class="ui-hidden-accessible">Title</label>
       <input type="text" name="title" id="{{ page.name }}-title" class="edit-title" value="{{ page.metadata.title }}" 
@@ -36,6 +36,11 @@
       <textarea name="body" rows="30" style="width: 100%" 
         class="mdown-editor">{{ page.body | escape }}</textarea>
     </p>
+    <ol id="upload-list" data-role="listview"></ol>
+      <span data-role="button" class="input-file-button" data-iconpos="right" data-icon="plus">
+        <span>Choose an Image to Upload</span>
+      </span>
+      <input type="file" name="tmp-image" id="file-input-target" class="input-hide"/>
     <div data-role="fieldcontain">
       <label for="{{ page.name | escape }}-template">Template</label>
       <select name="template" id="{{ page.name | escape }}-template" class="select-template">

@@ -85,6 +85,26 @@ $(document).delegate(".login-form", "submit", function() {
   $(this).closest(".ui-page").trigger("cleardomcache");
 });
 
+// File input related stuff
+$(document).delegate(".input-file-button", "click", function() {
+  $('#file-input-target').trigger('click');
+});
+
+$(document).delegate("#file-input-target", "change", function() {
+  var filename = $("#file-input-target").val().replace(/^.*[\\\/]/, '')
+  var args = {'filename':filename};
+  var numLI = $("#upload-list li").length
+  $("#upload-list").append('<li> To incorporate ' + filename + ', use the following: ![Descriptive Text]('+ (numLI + 1) +')</li>');
+  var targ = $("#file-input-target")
+  targ.after('<input type="file" name="tmp-image" id="file-input-target" class="input-hide"/>')
+  targ.attr('id', 'image'+(numLI+1))
+  targ.attr('name', 'image'+(numLI+1))
+  $("#upload-list").listview('refresh');
+  $("form").attr( "enctype", "multipart/form-data" ).attr( "encoding", "multipart/form-data" );
+});
+
+//$('.input-file-button').on('click', function(){$('.input-file-button input[type=file]').trigger('click');})
+
 // // Whenever the user edits the page, remove the editor page after the next page loads (as it is out of date)
 // $(document).delegate(".editor-form", "submit", function() {
 //   var $page = $(this).closest('.ui-page');

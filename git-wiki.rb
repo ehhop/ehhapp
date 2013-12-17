@@ -54,7 +54,7 @@ module GitWiki
   
   class InvalidPageName < PageNotFound
   end
-  
+ 
   class App < Sinatra::Base
     set :app_file, __FILE__
     set :views, [settings.root + '/templates', settings.root + '/_layouts']
@@ -140,6 +140,10 @@ module GitWiki
           :mdown_examples => GitWiki.mdown_examples, :approving => true)
     end
 
+    get '/download/:filename' do |filename|
+      send_file "./public/uploads/#{filename}", :filename => filename
+    end
+
     get "/:page/?:username?" do
       begin
         if params[:username]
@@ -168,7 +172,31 @@ module GitWiki
       
       @page = Page.find_or_create(params[:page], username)
       new_metadata = @page.metadata.clone
-      
+
+      # should maybe be spun off
+      if params[:body]
+        imageHash =  Hash.new
+        params.each do |key, array|
+          if key =~ /image(\d*)/
+            imagenum = $1
+            tempfile = params[key][:tempfile]
+            filename = params[key][:filename]
+            appendage = 0
+            tmpfilename = filename
+            while (File.exist?("./public/uploads/#{tmpfilename}")) do
+              tmpfilename = appendage.to_s + filename
+              appendage += 1
+            end
+            File.open("./public/uploads/#{tmpfilename}", "wb") do |f|
+              f.write(tempfile.read)
+            end 
+            #File.copy(tempfile.path, "./uploads/#{tmpfilename}") - requires extra dependencies but may want to consider
+            imageHash[$1] = "/download/#{tmpfilename}"
+          end
+        end
+        params[:body].gsub!(/!\[(.*?)\]\((\d*)\)/) {"![#{$1}](#{imageHash[$2]})"}
+      end
+
       if @is_editor || !auth_enabled?
         Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
         @page.update_content(username, params[:body], new_metadata, params[:approving])

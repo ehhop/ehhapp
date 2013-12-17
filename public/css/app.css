@@ -184,6 +184,10 @@
   opacity: 0.7;
 }
 
+.input-hide{
+  display: none;
+}
+
 /** OTHER PAGES **/
 
 .totalSum {
