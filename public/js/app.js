@@ -103,8 +103,6 @@ $(document).delegate("#file-input-target", "change", function() {
   $("form").attr( "enctype", "multipart/form-data" ).attr( "encoding", "multipart/form-data" );
 });
 
-//$('.input-file-button').on('click', function(){$('.input-file-button input[type=file]').trigger('click');})
-
 // // Whenever the user edits the page, remove the editor page after the next page loads (as it is out of date)
 // $(document).delegate(".editor-form", "submit", function() {
 //   var $page = $(this).closest('.ui-page');

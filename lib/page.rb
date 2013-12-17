@@ -1,6 +1,5 @@
 require "grit"
 require "rdiscount"
-require "fileutils"
 require_relative "core_ext"
 
 module GitWiki
