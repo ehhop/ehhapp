@@ -120,7 +120,7 @@ module GitWiki
       # Apply appropriate post-translational modifications based on specified template
       begin
         if metadata["template"]
-          html = self.class.get_template(metadata["template"]).new(html).transform
+          html = self.class.get_template(metadata["template"]).new(html, self).transform
         end
       rescue NameError; end
       html

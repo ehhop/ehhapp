@@ -1,4 +1,4 @@
-<div data-role="header" class="{% if page.on_branch %}on-branch{% endif %}">
+  class="{% if page.on_branch %}on-branch{% endif %}">
   {% if error %}
   <a class="ui-btn-left" data-icon="back" data-rel="back">Back</a>
   {% elsif page.metadata.backlink and page.metadata.backlink != "" %}
@@ -43,4 +43,3 @@
       The version you tried to open was merged or deleted
     </div>
   {% endif %}
-</div><!-- /header -->

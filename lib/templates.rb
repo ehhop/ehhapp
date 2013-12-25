@@ -5,9 +5,10 @@ module GitWiki
 
   class TemplateTransformation
     
-    def initialize(html)
+    def initialize(html, page=nil)
       @html = html
       @nk = Nokogiri::HTML.fragment(html, "UTF-8")
+      @page = page
     end
   
     def transform; @html; end

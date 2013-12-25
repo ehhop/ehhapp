@@ -1,0 +1,23 @@
+<div data-role="header" data-position="fixed"
+  {{ header }}
+    
+  <div data-role="navbar">
+    <ul>
+  {% if page.name contains 'Spanish' %}
+      <li><a href="/{{ page.name | replace_first:'Spanish','' }}">English</a></li>
+      <li><a href="/{{ page.name }}" class="ui-btn-active ui-state-persist">Spanish</a></li>
+  {% else %}
+      <li><a href="/{{ page.name }}" class="ui-btn-active ui-state-persist">English</a></li>
+      <li><a href="/{{ page.name }}Spanish">Spanish</a></li>
+  {% endif %}
+    </ul>
+  </div><!-- /navbar -->
+  
+  <div class="ui-body ui-body-e total-sum">Current Score</div>
+</div>
+
+<div data-role="content" class="assessment-form">
+
+{{ page.to_html }}
+
+</div><!-- /content -->

@@ -239,10 +239,9 @@
 
 /** OTHER PAGES **/
 
-.totalSum {
+.total-sum {
   position: absolute;
-  right: 0.2em;
-  top: 0.2em;
+  right: 0em;
 }
 
 .ui-page > p {
@@ -299,6 +298,10 @@
   font-weight: normal;
 }
 
+.assessment-form {
+  padding-top: 30px;
+}
+
 /* CSS optimized for wider screens (tablets, desktop screens) */
 
 @media (min-width: 450px) {
@@ -346,5 +349,9 @@
   
   .page-editor .example-pair:first-child .help-text {
     display: block;
+  }
+
+  .assessment-form .ui-controlgroup-label {
+    margin: 3% 1% 0 1%;
   }
 }

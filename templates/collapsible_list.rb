@@ -28,10 +28,10 @@ class CollapsibleList < TemplateTransformation
         fieldset = Nokogiri::HTML.fragment('<fieldset data-role="controlgroup" />').at_css('fieldset')
         curr_element.css('li').each do |li_nk|
           checkbox = Nokogiri::HTML.fragment('<input type="checkbox" class="custom" data-mini="true"/>').at_css('input')
-          checkbox['name'] = "checkbox-#{tmp_index}"
-          checkbox['id'] = "checkbox-#{tmp_index}"
+          checkbox['name'] = "#{@page.name}-checkbox-#{tmp_index}"
+          checkbox['id'] = "#{@page.name}-checkbox-#{tmp_index}"
           label = Nokogiri::HTML.fragment("<label />").at_css('label')
-          label['for'] = "checkbox-#{tmp_index}"
+          label['for'] = "#{@page.name}-checkbox-#{tmp_index}"
           label.content = li_nk.content
           fieldset.add_child(checkbox)                
           fieldset.add_child(label)

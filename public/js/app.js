@@ -81,16 +81,17 @@ $(document).delegate(".ui-page.editor", "pageinit", function() {
 
 // Page-specific logic goes here.
 
-$(document).delegate("#phq9, #phq9-spanish", "pageinit", function() {
-  $(this).find(":radio").click(function() {
-    var total = 0,
-      $page = $(this).closest("#phq9, #phq9-spanish");
+// This updates the score for the PHQ-9, GAD-7, etc.
+$(document).delegate(".ui-page:has(.assessment-form)", "pageinit", function() {
+  var $page = $(this);
+  $page.find(":radio").click(function() {
+    var total = 0;
     $page.find(":checked").each(function() { total += parseInt($(this).val(), 10); });
-    $page.find(".totalSum").text("Score: " + total);
+    $page.find(".total-sum").text("Score: " + total);
   });
 });
 
-$(document).delegate("#formulary", "pageinit", function() {
+$(document).delegate(".ui-page:has(.formulary-list)", "pageinit", function() {
   $(this).find("[data-type=search]").attr("autocomplete", "off").attr("autocapitalize", "off");
 });
 
