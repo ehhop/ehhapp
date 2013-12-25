@@ -73,6 +73,10 @@ $(document).delegate(".ui-page.editor", "pageinit", function() {
       $page.find('.examples-'+newTemplate).addClass('examples-active').fadeIn();
     });
   });
+  // Scroll the uploaded images list all the way to the right.
+  $(this).find('.add-image-collapsible').click(function() {
+    $page.find('.upload-list').scrollLeft(1000000);
+  });
 });
 
 // Page-specific logic goes here.

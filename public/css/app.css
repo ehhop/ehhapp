@@ -188,7 +188,7 @@
   list-style-type: none;
   padding: 0;
   margin: 0 -15px;
-  height: 112px;
+  height: 118px;
   white-space: nowrap;
   overflow-x: scroll;
   overflow-y: hidden;
@@ -200,8 +200,9 @@
 }
 .page-editor .upload-list::-webkit-scrollbar-thumb {
   border-radius: 4px;
-  background-color: rgba(0,0,0,.5);
-  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+  border: 1px solid rgba(0,0,0,.1);
+  background-color: rgba(0,0,0,.3);
+  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.3);
 }
 
 .page-editor .upload-list li {
