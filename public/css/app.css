@@ -77,7 +77,7 @@
   text-transform: uppercase;
 }
 
-.ui-content > p > img {
+.ui-content p > img {
   max-width: 100%;
 }
 
