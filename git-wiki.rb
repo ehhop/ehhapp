@@ -168,7 +168,7 @@ module GitWiki
         liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
       rescue PageNotFound => err
         empty_page = Page.empty_as_hash(err.name)
-        liquid :error, :locals => locals(empty_page, :header => header(empty_page), :error => err.to_hash)
+        liquid :error, :locals => locals(empty_page, :header => header(empty_page, :error => true), :error => err.to_hash)
       end
     end
 

@@ -1,4 +1,16 @@
-{{ header }}
+<div data-role="header" class="{% if page.on_branch %}on-branch{% endif %}">
+  <a class="ui-btn-left" data-icon="back" data-rel="back">Back</a>
+  <h1>EHHapp</h1>
+  <a class="ui-btn-right" data-theme="" href="/{{ page.name }}/edit" data-icon="pencil">Create</a>
+  
+  {% if just_auth %}
+    {% if username and username != '' %}
+  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ username }}</div>
+    {% else %}
+  <div class="ui-body ui-bar-e auth-flash">You have been logged out</div>
+    {% endif %}
+  {% endif %}
+</div><!-- /header -->
 
 <div data-role="content">
 

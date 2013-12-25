@@ -1,11 +1,13 @@
 <div data-role="header" class="{% if page.on_branch %}on-branch{% endif %}">
-  {% if page.metadata.backlink and page.metadata.backlink != "" %}
-    <a class="ui-btn-left" data-icon="back" href="/{{ page.metadata.backlink }}">Back</a>
+  {% if error %}
+  <a class="ui-btn-left" data-icon="back" data-rel="back">Back</a>
+  {% elsif page.metadata.backlink and page.metadata.backlink != "" %}
+  <a class="ui-btn-left" data-icon="back" href="/{{ page.metadata.backlink }}">Back</a>
   {% else %}
     {% if username and username != '' %}
-    <a class="ui-btn-left" href="/logout">Logout <span class="username wide-only">{{ username }}</span></a>
+  <a class="ui-btn-left" href="/logout">Logout <span class="username wide-only">{{ username }}</span></a>
     {% else %}
-    <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
+  <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
     {% endif %}
   {% endif %}
   <h1>{% if page.metadata.title != '' %}{{ page.metadata.title }}{% else %}EHHapp{% endif %}</h1>
