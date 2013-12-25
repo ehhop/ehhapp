@@ -43,6 +43,35 @@ class ScoredAssessment < TemplateTransformation
     
     @nk.to_html
   end
+  
+  md = <<-MD
+Initial prompt at the top
+
+1. First multiple choice question
+    - Each choice
+    - goes in a nested list
+    - like this
+MD
+
+  example md, <<-HTML
+  <p>Initial prompt at the top</p>
+
+  <form><div data-role="fieldcontain"><fieldset data-role="controlgroup" data-mini="true">
+  <legend>1. First multiple choice question</legend>
+  <ul>
+  <li>
+  <input type="radio" id="GAD7-rdo-1" name="GAD7_1" value="0"><label for="GAD7-rdo-1">Each choice</label>
+  </li>
+  <li>
+  <input type="radio" id="GAD7-rdo-2" name="GAD7_1" value="1"><label for="GAD7-rdo-2">goes in a nested list</label>
+  </li>
+  <li>
+  <input type="radio" id="GAD7-rdo-3" name="GAD7_1" value="2"><label for="GAD7-rdo-3">like this</label>
+  </li>
+  </ul>
+  </fieldset></div></form>
+  HTML
+  
 end
 
 end
