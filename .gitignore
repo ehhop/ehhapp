@@ -3,3 +3,5 @@
 config.yaml
 ehhapp-data
 *~
+public/uploads/*
+!public/uploads/.emptyfile

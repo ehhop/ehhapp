@@ -34,13 +34,19 @@
     <p>
       <label for="{{ page.name | escape }}-body" class="ui-hidden-accessible">Content</label>
       <textarea name="body" rows="30" style="width: 100%" 
-        class="mdown-editor">{{ page.body | escape }}</textarea>
+        class="never-focused mdown-editor">{{ page.body | escape }}</textarea>
     </p>
-    <ol id="upload-list" data-role="listview"></ol>
-      <span data-role="button" class="input-file-button" data-iconpos="right" data-icon="plus">
-        <span>Choose an Image to Upload</span>
-      </span>
-      <input type="file" name="tmp-image" id="file-input-target" class="input-hide"/>
+    <div data-role="collapsible" data-content-theme="c">
+      <h2>Adding images</h2>
+      <ul class="upload-list">
+        {% for u in uploads %}
+        <li><a href="javascript:void(0)" data-role="button" data-shadow="false" class="insert-image">
+          <img src="/download/{{ u }}"/></a></li>
+        {% endfor %}
+        <li><a href="javascript:void(0)" class="input-file-button" data-role="button" data-theme="b">Upload&hellip;</a></li>
+      </ul>
+      <input type="file" name="tmp-image" class="file-input-target input-hide"/>
+    </div>
     <div data-role="fieldcontain">
       <label for="{{ page.name | escape }}-template">Template</label>
       <select name="template" id="{{ page.name | escape }}-template" class="select-template">
@@ -90,9 +96,9 @@
       <div class="ui-block-a"><a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a></div>
       <div class="ui-block-b">
         {% if approving %}
-        <input type="submit" data-theme="b" value="Save &amp; merge"/>
+        <input type="submit" data-theme="e" value="Save &amp; merge"/>
         {% else %}
-        <input type="submit" data-theme="b" value="Save edits"/>
+        <input type="submit" data-theme="e" value="Save edits"/>
         {% endif %}
       </div>	   
     </fieldset>

@@ -81,6 +81,10 @@ module GitWiki
         end
       end
       
+      def uploads
+        Dir["./public/uploads/*"].map{|f| File.basename f}
+      end
+      
       def header(page, and_these = {})
         liquid :header, :layout => false, :locals => locals(page, and_these)
       end
@@ -93,6 +97,7 @@ module GitWiki
           :nocache => false,
           :is_editor => @is_editor,
           :templates => templates,
+          :uploads => uploads,
           :editors => editors,
           :footer_links => settings.config["footer_links"]
         }.merge(and_these)
@@ -173,28 +178,29 @@ module GitWiki
       @page = Page.find_or_create(params[:page], username)
       new_metadata = @page.metadata.clone
 
-      # should maybe be spun off
+      # Save and rename uploaded images
       if params[:body]
-        imageHash =  Hash.new
-        params.each do |key, array|
-          if key =~ /image(\d*)/
-            imagenum = $1
-            tempfile = params[key][:tempfile]
-            filename = params[key][:filename]
-            appendage = 0
-            tmpfilename = filename
-            while (File.exist?("./public/uploads/#{tmpfilename}")) do
-              tmpfilename = appendage.to_s + filename
-              appendage += 1
+        new_image_hrefs = {}
+        params.each do |key, param|
+          if key =~ /image(\d*)/ && param[:filename]
+            image_num = $1
+            append = 0
+            basename = File.basename(param[:filename], ".*").gsub(/[^A-Za-z0-9_-]/, '-') # sanitize basename
+            ext = File.extname(param[:filename])
+            continue unless [".jpg", ".png", ".jpeg", ".gif", ".bmp"].include?(ext) # validate extension
+            filename = basename + ext
+            # avoid overwriting an existing image with the same name
+            while (File.exist?("./public/uploads/#{filename}")) do
+              filename = "#{basename}-#{append += 1}#{ext}"
             end
-            File.open("./public/uploads/#{tmpfilename}", "wb") do |f|
-              f.write(tempfile.read)
-            end 
-            #File.copy(tempfile.path, "./uploads/#{tmpfilename}") - requires extra dependencies but may want to consider
-            imageHash[$1] = "/download/#{tmpfilename}"
+            # Copy to final destination and memoize the href for this new image
+            File.open("./public/uploads/#{filename}", "wb") { |f| f.write(param[:tempfile].read) }
+            new_image_hrefs[image_num] = "/download/#{filename}"
           end
         end
-        params[:body].gsub!(/!\[(.*?)\]\((\d*)\)/) {"![#{$1}](#{imageHash[$2]})"}
+        # Substitute temporary hrefs to newly uploaded images with their actual post-upload href
+        # e.g., uploaded smiley.jpg as (1), then "![alt text](1)" --> "![alt text](smiley.jpg)"
+        params[:body].gsub!(/!\[(.*?)\]\((\d*)\)/) {"![#{$1}](#{new_image_hrefs[$2]})"}
       end
 
       if @is_editor || !auth_enabled?

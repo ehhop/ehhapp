@@ -184,7 +184,51 @@
   opacity: 0.7;
 }
 
-.input-hide{
+.page-editor .upload-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0 -15px;
+  height: 112px;
+  white-space: nowrap;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.page-editor .upload-list::-webkit-scrollbar {
+  -webkit-appearance: none;
+  height: 7px;
+}
+.page-editor .upload-list::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0,0,0,.5);
+  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+
+.page-editor .upload-list li {
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.page-editor .upload-list .ui-btn-inner {
+  padding: 10px;
+  display: table-cell;
+  vertical-align: middle;
+  height: 80px;
+  width: 80px;
+}
+
+.page-editor .upload-list a {
+  margin-top: 0;
+  width: 100px;
+  height: 100px;
+}
+
+.page-editor .upload-list li img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.input-hide {
   display: none;
 }
 

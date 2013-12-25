@@ -2,6 +2,43 @@
 
 var currentUsername = null;
 
+// Utility function for inserting text at the caret in a textarea
+
+function insertAtCaret(elem, text) {
+  var txtarea = $(elem).get(0);
+  var scrollPos = txtarea.scrollTop;
+  var strPos = 0;
+  var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ? 
+    "ff" : (document.selection ? "ie" : false ) );
+  if (br == "ie") { 
+    txtarea.focus();
+    var range = document.selection.createRange();
+    range.moveStart ('character', -txtarea.value.length);
+    strPos = range.text.length;
+  }
+  else if (br == "ff") strPos = txtarea.selectionStart;
+  strPos = strPos || txtarea.value.length;
+
+  var front = (txtarea.value).substring(0,strPos);  
+  var back = (txtarea.value).substring(strPos,txtarea.value.length); 
+  txtarea.value = front+text+back;
+  strPos = strPos + text.length;
+  if (br == "ie") { 
+    txtarea.focus();
+    var range = document.selection.createRange();
+    range.moveStart('character', -txtarea.value.length);
+    range.moveStart('character', strPos);
+    range.moveEnd('character', 0);
+    range.select();
+  }
+  else if (br == "ff") {
+    txtarea.selectionStart = strPos;
+    txtarea.selectionEnd = strPos;
+    txtarea.focus();
+  }
+  txtarea.scrollTop = scrollPos;
+}
+
 // Detect if we are running fullscreen on an iPhone
 
 function isFullScreen() {
@@ -87,20 +124,38 @@ $(document).delegate(".login-form", "submit", function() {
 
 // File input related stuff
 $(document).delegate(".input-file-button", "click", function() {
-  $('#file-input-target').trigger('click');
+  $(this).closest('form').find('.file-input-target').trigger('click');
 });
 
-$(document).delegate("#file-input-target", "change", function() {
-  var filename = $("#file-input-target").val().replace(/^.*[\\\/]/, '')
-  var args = {'filename':filename};
-  var numLI = $("#upload-list li").length
-  $("#upload-list").append('<li> To incorporate ' + filename + ', use the following: ![Descriptive Text]('+ (numLI + 1) +')</li>');
-  var targ = $("#file-input-target")
-  targ.after('<input type="file" name="tmp-image" id="file-input-target" class="input-hide"/>')
-  targ.attr('id', 'image'+(numLI+1))
-  targ.attr('name', 'image'+(numLI+1))
-  $("#upload-list").listview('refresh');
-  $("form").attr( "enctype", "multipart/form-data" ).attr( "encoding", "multipart/form-data" );
+$(document).delegate(".file-input-target", "change", function() {
+  var filename = $(this).val().replace(/^.*[\\\/]/, ''),
+    $form = $(this).closest('form'),
+    $ul = $form.find(".upload-list"),
+    numNewImages = $ul.children('.new-image').length + 1,
+    $li = $('<li class="new-image"/>').insertBefore($ul.find('.input-file-button').closest('li')),
+    $a = $('<a data-role="button" data-shadow="false" class="insert-image"/>').appendTo($li);
+  $a.button().data('img-href', numNewImages.toString()).click();
+  $(this).after('<input type="file" name="tmp-image" class="file-input-target input-hide"/>');
+  $(this).attr('name', 'image' + numNewImages).removeClass('file-input-target');
+  if (FileReader) {
+    var file = $(this).get(0).files[0];
+    if (file.type.match(/image.*/)) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.src = reader.result;
+        $a.find('.ui-btn-text').append(img);
+      }
+      reader.readAsDataURL(file); 
+    }
+  }
+});
+
+$(document).delegate(".insert-image", "click", function() {
+  var $form = $(this).closest('form'),
+    href = $(this).data('img-href') || $(this).find('img').eq(0).attr('src'),
+    basename = href.replace(/^.*[\\\/]/, '');
+  insertAtCaret($form.find('.mdown-editor'), '![Description for '+basename+']('+href+')');
 });
 
 // // Whenever the user edits the page, remove the editor page after the next page loads (as it is out of date)
