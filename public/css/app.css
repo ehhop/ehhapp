@@ -77,6 +77,10 @@
   text-transform: uppercase;
 }
 
+.ui-content > p > img {
+  max-width: 100%;
+}
+
 /** LOGIN **/
 
 .login-form .key {
