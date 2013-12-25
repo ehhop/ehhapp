@@ -117,6 +117,7 @@ mdown_examples:
         
     - |
         [A link](http://ehhapp.org).
+        [A link to a phone number](tel:+18773724161).
 
     - |
         How to make bulleted lists:
