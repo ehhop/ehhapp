@@ -1,5 +1,6 @@
 require "grit"
 require "rdiscount"
+require "lockfile"
 require_relative "core_ext"
 
 module GitWiki
@@ -66,6 +67,12 @@ module GitWiki
 
     def self.repository
       GitWiki.repository || raise
+    end
+    
+    def self.repo_lock(&block)
+      path = File.join(repository.working_dir, ".lockfile")
+      lockfile = Lockfile.new(path, {:max_age => 60, :suspend => 2})
+      if block_given? then lockfile.lock &block; else lockfile; end
     end
 
     def self.extension
@@ -170,12 +177,15 @@ module GitWiki
     def update_content(author, new_body, new_metadata = {}, other_author = nil)
       new_content = prepare_new_content(author, new_body, new_metadata)
       return if new_content == content && !merging
-      # TODO: Should probably lock directory with File#flock(File::LOCK_EX) from here...
-      File.open(file_name, "w") { |f| f << new_content }
-      if other_author && !other_author.empty?
-        merge_and_commit!(author, new_content, other_author)
-      else add_to_index_and_commit!(author); end
-      # TODO: ... to here
+      
+      # LOCK during this operation, which changes the working tree and index
+      self.class.repo_lock do
+        File.open(file_name, "w") { |f| f << new_content }
+        if other_author && !other_author.empty?
+          merge_and_commit!(author, new_content, other_author)
+        else add_to_index_and_commit!(author); end
+      end # ... UNLOCK
+      
       @metadata, @body = extract_front_matter
     end
     
@@ -185,7 +195,9 @@ module GitWiki
     def branch_content(author, new_body, new_metadata = {})
       new_content = prepare_new_content(author, new_body, new_metadata)
       return if new_content == content
-      branch_and_commit!(author, new_content)
+      
+      # LOCK during this operation, which could be affected by the working tree & index
+      self.class.repo_lock do branch_and_commit!(author, new_content); end
     end
     
     # Mutates the page object into a previewed merge between master and the author's branch
@@ -193,13 +205,21 @@ module GitWiki
       branch_name = "#{author}/#{name}"
       git = self.class.repository.git
       merged_body = nil
-      # TODO: Should probably lock the directory from here...
-      Dir.chdir(self.class.repository.working_dir) do
-        merge_result = git.merge({:no_ff => true, :no_commit => true}, branch_name)
-        merged_body = File.read(file_name).sub(/[\s\S]*\n---[ \t]*\n/, '')
-        git.reset(:hard => true)
-      end
-      # TODO: ... to here
+      
+      # LOCK during this operation, which changes the working tree and index
+      self.class.repo_lock do
+        Dir.chdir(self.class.repository.working_dir) do
+          # Since this process overwrites files in the working tree, and messes with the index...
+          begin
+            merge_result = git.merge({:no_ff => true, :no_commit => true}, branch_name)
+            merged_body = File.read(file_name).sub(/[\s\S]*\n---[ \t]*\n/, '')
+          ensure
+            # we want to ensure that they are returned to their previous state
+            git.reset(:hard => true)
+          end
+        end
+      end  # ... UNLOCK
+      
       other_metadata, other_body = extract_front_matter(other_blob.data)
       if Grit::Merge.new(merged_body).conflicts == 0
         new_content = prepare_new_content(author, merged_body, other_metadata, false)
@@ -208,9 +228,14 @@ module GitWiki
         new_content = prepare_new_content(author, other_body, other_metadata, false)
         initialize(self.class.create_blob_for(name, new_content), branch_name, true)
       end
+      
       self
     end
 
+    # Metadata is stored as a YAML file at the beginning of each page --
+    # kind of like YAML front matter in Jekyll.
+    # This function extracts the YAML front matter into a [metadata, page_content] pair.
+    # If there is no YAML front matter, we supply the default metadata values.
     private
     def extract_front_matter(from = nil)
       from ||= content
@@ -221,6 +246,7 @@ module GitWiki
       end
     end
     
+    # Package metadata and body into one string of page content, ready to be committed.
     def prepare_new_content(author, new_body, new_metadata, update_last_modified = true)
       new_metadata["last_modified"] = Time.now if update_last_modified
       new_metadata["author"] = author
@@ -235,6 +261,17 @@ module GitWiki
       }
       self.class.repository.commit_index(commit_message(author))
       initialize(self.class.repository.tree/(@blob.name)) # Reinitialize from the committed blob
+    end
+    
+    # Commits new_content to the master branch without using the working directory
+    def commit!(author, new_content)
+      @on_branch = nil
+      repo = self.class.repository
+      index = repo.index
+      index.read_tree("master")
+      index.add(name + self.class.extension, new_content)
+      index.commit(commit_message(author), [repo.commit("master")], actor(author), nil, "master")
+      initialize(repo.tree/(@blob.name)) # Reinitialize from the committed blob
     end
     
     # Commits new_content to a topic branch named after the author and page name
@@ -262,22 +299,26 @@ module GitWiki
       index.add(name + self.class.extension, new_content)
       index.commit(commit_message(author, other_author, true), parents, actor(author), nil, "master")
       # Now that it is merged, we can delete the author's topic branch.
-      self.class.repository.git.branch({}, "-d", branch_name)
+      repo.git.branch({}, "-d", branch_name)
       # Reinitialize this Page  object from the committed blob
       initialize(repo.tree/(name + self.class.extension))
     end
 
+    # What's the full file name pointing to this page's content in the working tree?
     def file_name
       File.join(self.class.repository.working_dir, name + self.class.extension)
     end
     
+    # Turns an author's username into a Grit::Actor for the purposes of committing
     def actor(author)
       author_email = self.class.email_domain && "#{author}@#{self.class.email_domain}"
       author_email ? Grit::Actor.new(author, author_email) : nil
     end
 
+    # Creates a standardized commit message for each kind of action
     def commit_message(author, personal_branch = false, merging = false)
       if personal_branch
+        # The author is working on his own branch, not master
         if merging then "#{author} merged edits by #{personal_branch} into #{name}"
         else "Proposed edits to #{name} by #{author}"; end
       else
