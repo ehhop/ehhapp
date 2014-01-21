@@ -217,7 +217,8 @@ module GitWiki
         liquid :error, :locals => locals(empty_page, :header => header(empty_page), :error => error)
       end
       
-      redirect "/#{@page}"
+      # Run the other route (#call instead of #redirect avoids any caching)
+      call env.merge("REQUEST_METHOD"=>"GET", "PATH_INFO" => "/#{@page}")
     end
 
   end
