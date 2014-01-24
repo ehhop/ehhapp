@@ -22,6 +22,10 @@ class RedirectList < TemplateTransformation
         a_nk = li_nk.css('a:first').first
         if a_nk
           li_nk['data-icon'] = 'phone' if a_nk['href'] =~ /^tel:/
+          if li_nk.css('p').length >= 1
+            # Strip out paragraphs that might have crept into list items
+            li_nk.children = li_nk.at_css('p:first').children
+          end
           parts = a_nk.content.split('|', 2)
           if parts.length > 1
             span_nk = Nokogiri::XML::Node.new "span", @nk
@@ -38,7 +42,8 @@ class RedirectList < TemplateTransformation
             a_nk.add_child(span_nk)
           end
         else
-          li_nk['data-role'] = 'list-divider'
+          li_nk['data-role'] = 'list-divider'  # This is a header within the list
+          li_nk.content = li_nk.content        # Strip all elements within
           tag_next_li = li_nk.content
         end
       end
@@ -72,7 +77,7 @@ MD
   HTML
   
   md = <<-MD
-* This becomes a header.
+* ### This becomes a header.
 MD
 
   example md, <<-HTML
@@ -85,7 +90,8 @@ MD
 Putting it all together.
 
 * [This is a link](/target)
-* This becomes a header.
+
+* ### Blank lines are allowed.
 * [This is a link | 
     with secondary text](/target2)
 * [This link places a call | 
@@ -96,7 +102,7 @@ MD
       <ul data-role="listview" data-inset="true" data-filter="true" class="redirect-list"
         data-filter-placeholder="Putting it all together.">
         <li><a href="/target">This is a link</a></li>
-        <li data-role="list-divider">This becomes a header.</li>
+        <li data-role="list-divider">Blank lines are allowed.</li>
         <li><a href="/target2">This is a link<br/><span class="secondary">with secondary text</span></a></li>
         <li data-icon="phone"><a href="tel:+18773724161">This link places a call<br/>
           <span class="secondary">to 877-372-4161</span></a></li>

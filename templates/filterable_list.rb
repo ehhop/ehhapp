@@ -18,12 +18,18 @@ module GitWiki
         ul_nk['data-theme'] = 'd'
       end
       @nk.css('ul:first>li').each do |li_nk|
-        li_nk['data-role'] = 'list-divider' if li_nk.css('a').length == 0
+        if li_nk.css('a').length == 0
+          li_nk['data-role'] = 'list-divider'   # This is a header within the list
+          li_nk.content = li_nk.content         # Strip all elements within
+        elsif li_nk.css('p').length >= 1
+          # Strip out paragraphs that might have crept into list items
+          li_nk.children = li_nk.at_css('p:first').children
+        end
       end
       @nk.to_html
     end
   
-    example "* List heading", <<-HTML
+    example "* ### List heading", <<-HTML
       <ul data-role="listview" data-inset="false" data-theme="d">
         <li data-role="list-divider">List heading</li>
       </ul>
@@ -42,19 +48,28 @@ It is optional, but if you want text at the top,
 be sure to put two breaks between the first line
 and the text, and the list and the text.
 
-* Putting it together
+You can also separate sections within the list
+with a blank line.
+
+* ### Putting it together
 * [First link](dest_1)
 * [Next link](dest_2)
+
+* ### Next section
+* [Third link](dest_3)
     MD
     
     example md_example, <<-HTML
       <p>It is optional, but if you want text at the top, be sure to put 
         two breaks between the first line and the text, and the list and the text.</p>
+      <p>You can also separate sections within the list with a blank line.</p>
       <ul data-role="listview" data-inset="false" data-theme="d" data-filter="true" 
         data-filter-placeholder="The first line specifies the placeholder in the search and is optional.">
         <li data-role="list-divider">Putting it together</li>
         <li><a href="dest_1">First link</a></li>
         <li><a href="dest_2">Next link</a></li>
+        <li data-role="list-divider">Next section</li>
+        <li><a href="dest_3">Third link</a></li>
       </ul>
     HTML
   
