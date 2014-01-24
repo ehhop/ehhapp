@@ -59,7 +59,7 @@ if (isFullScreen() && window.localStorage) {
     window.localStorage["lastPageVisited"] = e.currentTarget.URL;
   });
   $(document).on("submit", function(e) {
-    window.localStorage["lastPageVisited"] = null;
+    window.localStorage["lastPageVisited"] = '';
   });
 }
 
