@@ -163,74 +163,30 @@ $(document).delegate(".insert-image", "click", function() {
   insertAtCaret($form.find('.mdown-editor'), '![Description for '+basename+']('+href+')');
 });
 
+// Whenever the user clicks a back button in the top toolbar,
+// if it would actually take us to the last page in history,
+// perform that action instead.
+
+$(document).delegate(".ui-header .ui-btn-left", "click", function(e) {
+  var $link = $(this),
+    prevHistory = $.mobile.urlHistory.getPrev(),
+    prevScroll = (prevHistory && prevHistory.lastScroll) || 0;
+  if ($link.is( ":jqmData(rel='back')")) { return; }
+  if (prevHistory && $link.attr("href") == prevHistory.url) {
+    e.preventDefault();
+    e.stopPropagation();
+    $.mobile.back();
+    // The following is supposed to be accomplished by jQM itself:
+    // $(document).one('pagechange', function() { window.scrollTop(prevScroll); });
+    // There's some problem here where certain browsers (Chrome) don't restore
+    // the prevScroll into window.scrollY, and hang in a state where they are
+    // aware they are "supposed" to be at lastScroll (any scroll events "jump")
+    // them to the right position but that is not what is painted.  IDK.
+  }
+});
+
 // // Whenever the user edits the page, remove the editor page after the next page loads (as it is out of date)
 // $(document).delegate(".editor-form", "submit", function() {
 //   var $page = $(this).closest('.ui-page');
 //   $(document).one("pageinit", ".ui-page", function() { if (this !== $page.get(0)) { $page.remove(); } });
 // });
-
-
-// $(document).bind("mobileinit", function () {
-//     $.mobile.pushStateEnabled = true;
-// });
-//  
-// $(function () {
-//     var menuStatus;
-//  
-//     // Show menu
-//     $("a.showMenu").click(function () {
-//         if (menuStatus != true) {
-//             $(".ui-page-active").animate({
-//                 marginLeft: "165px",
-//             }, 300, function () {
-//                 menuStatus = true
-//             });
-//             return false;
-//         } else {
-//             $(".ui-page-active").animate({
-//                 marginLeft: "0px",
-//             }, 300, function () {
-//                 menuStatus = false
-//             });
-//             return false;
-//         }
-//     });
-//  
-//  
-//     $("#menu, .pages").live("swipeleft", function () {
-//         if (menuStatus) {
-//             $(".ui-page-active").animate({
-//                 marginLeft: "0px",
-//             }, 300, function () {
-//                 menuStatus = false
-//             });
-//         }
-//     });
-//  
-//     $(".pages").live("swiperight", function () {
-//         if (!menuStatus) {
-//             $(".ui-page-active").animate({
-//                 marginLeft: "165px",
-//             }, 300, function () {
-//                 menuStatus = true
-//             });
-//         }
-//     });
-//  
-//     $("div[data-role="page"]").live("pagebeforeshow", function (event, ui) {
-//         menuStatus = false;
-//         $(".pages").css("margin-left", "0");
-//     });
-//  
-//     // Menu behaviour
-//     $("#menu li a").click(function () {
-//         var p = $(this).parent();
-//         if ($(p).hasClass("active")) {
-//             $("#menu li").removeClass("active");
-//         } else {
-//             $("#menu li").removeClass("active");
-//             $(p).addClass("active");
-//         }
-//     });
-// });
-//  
