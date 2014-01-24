@@ -158,6 +158,11 @@
 
 .page-editor .example-pair pre.code {
   overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.page-editor .example-pair pre.code .hilite {
+  background-color: rgba(255, 0, 0, .5);
 }
 
 .code::-webkit-scrollbar {

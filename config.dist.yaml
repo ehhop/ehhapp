@@ -112,10 +112,10 @@ mdown_examples:
     
     - |
        If you need a line break in the middle
-       of a paragraph, you can end the line
-       with two spaces, e.g.:
+       of a paragraph, type two spaces before
+       hitting return at the end of the line:
        
-       17 East 102nd St.  
+       17 East 102nd St.<span class="hilite">  </span>  
        New York, NY 10029
     
     - |
