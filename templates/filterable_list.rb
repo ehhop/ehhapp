@@ -35,9 +35,23 @@ module GitWiki
       </ul>
     HTML
     
-    example "The first line specifies the placeholder in the search bar.\n\nIt is optional, but if you want text at the top,\nbe sure to put two breaks between the first line\nand the text, and the list and the text.\n\n* Putting it together\n* [First link](dest_1)\n* [Next link](dest_2)", <<-HTML
-      <p>It is optional, but if you want text at the top, be sure to put two breaks between the first line and the text, and the list and the text.</p>
-      <ul data-role="listview" data-inset="false" data-theme="d" data-filter="true" data-filter-placeholder="The first line specifies the placeholder in the search and is optional.">
+    md_example = <<-MD
+The first line specifies the placeholder in the search bar.
+
+It is optional, but if you want text at the top,
+be sure to put two breaks between the first line
+and the text, and the list and the text.
+
+* Putting it together
+* [First link](dest_1)
+* [Next link](dest_2)
+    MD
+    
+    example md_example, <<-HTML
+      <p>It is optional, but if you want text at the top, be sure to put 
+        two breaks between the first line and the text, and the list and the text.</p>
+      <ul data-role="listview" data-inset="false" data-theme="d" data-filter="true" 
+        data-filter-placeholder="The first line specifies the placeholder in the search and is optional.">
         <li data-role="list-divider">Putting it together</li>
         <li><a href="dest_1">First link</a></li>
         <li><a href="dest_2">Next link</a></li>

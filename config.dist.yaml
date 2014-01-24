@@ -109,7 +109,15 @@ mdown_examples:
        Two returns creates a new paragraph.
        Without two returns, the paragraph
        keeps flowing.
+    
+    - |
+       If you need a line break in the middle
+       of a paragraph, you can end the line
+       with two spaces, e.g.:
        
+       17 East 102nd St.  
+       New York, NY 10029
+    
     - |
         # Big header.
 
@@ -122,6 +130,7 @@ mdown_examples:
     - |
         How to make bulleted lists:
 
+        * Two returns, then
         * Use
         * Asterisks
         * Before each item.
