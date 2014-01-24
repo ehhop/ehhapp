@@ -58,6 +58,9 @@ if (isFullScreen() && window.localStorage) {
   $(document).on("pagechange", function(e) {
     window.localStorage["lastPageVisited"] = e.currentTarget.URL;
   });
+  $(document).on("submit", function(e) {
+    window.localStorage["lastPageVisited"] = null;
+  });
 }
 
 // Specific for the editor:
