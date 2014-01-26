@@ -1,4 +1,6 @@
 require "sinatra/base"
+require "sinatra/json"
+require "rack/csrf"
 require "grit"
 require "yaml"
 require "require_all"
@@ -59,13 +61,17 @@ module GitWiki
     set :app_file, __FILE__
     set :views, [settings.root + '/templates', settings.root + '/_layouts']
     
+    use Rack::Session::Cookie
+    use Rack::Csrf, :raise => true, :skip => ['POST:/.*/history', 'POST:/login']
     register Sinatra::EmailAuth
     set :config, GitWiki.config
     
     # Allow templates in multiple folders.  The ones in _layouts are special and
     # can't be set as a template for a Page.  The ones in templates *can* be set as
     # a template for a Page by the user.
+    helpers Sinatra::JSON
     helpers do
+
       def find_template(views, name, engine, &block)
         Array(views).each { |v| super(v, name, engine, &block) }
       end
@@ -99,7 +105,8 @@ module GitWiki
           :templates => templates,
           :uploads => uploads,
           :editors => editors,
-          :footer_links => settings.config["footer_links"]
+          :footer_links => settings.config["footer_links"],
+          :csrf_token => Rack::Csrf.csrf_token(env)
         }.merge(and_these)
       end
     end
@@ -129,12 +136,58 @@ module GitWiki
     end
 
     # TODO: We should add the ability to specify and edit a "back" destination within page metadata
+    post "/:page/history" do
+      authorize! "/#{params[:page]}"
+      head_id = params[:head]
+      commit_display = 5
+      commit_list = []
+      Grit::Commit.find_all(GitWiki.repository, head_id, {:skip => 1}).each do |com|
+        if com.message =~ /#{params[:page]}\z/
+          commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
+                          "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s,
+                          "new_file" => com.diffs.first.new_file}
+          break unless commit_list.length < commit_display
+        end
+      end
+      json :result => commit_list
+    end
+
+    get "/:page/history" do
+      authorize! "/#{params[:page]}"
+      commit = GitWiki.repository.commits(params[:commit]).first
+      if commit.diffs.first.b_blob
+        blob= commit.diffs.first.b_blob
+        blob.name= commit.diffs.first.b_path
+        @page = Page.new blob
+      else
+        @page = "ERROR"
+      end
+      template = @page.metadata["template"]
+      template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
+      liquid template, :locals => locals(@page, :header => header(@page, :for_approval => false))
+    end
 
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
       @page = Page.find_or_create(params[:page], username)
+
+      ### Generate initial commits to display
+      # potential for amortization (request in blocks) to be implemented
+      commit_display = 5
+      commit_list = []
+      Grit::Commit.find_all(GitWiki.repository, 'master').each do |com|
+        if com.message =~ /#{params[:page]}\z/
+          commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
+                          "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
+                          "new_file" => com.diffs.first.new_file}
+          break unless commit_list.length < commit_display
+        end
+      end
+      commit_list = nil if commit_list.empty?
+      ###
+
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
-          :mdown_examples => GitWiki.mdown_examples)
+          :mdown_examples => GitWiki.mdown_examples, :commit_list => commit_list)
     end
     
     get "/:page/approve/:username" do
@@ -220,7 +273,6 @@ module GitWiki
       # Run the other route (#call instead of #redirect avoids any caching)
       call env.merge("REQUEST_METHOD"=>"GET", "PATH_INFO" => "/#{@page}")
     end
-
   end
 end
 

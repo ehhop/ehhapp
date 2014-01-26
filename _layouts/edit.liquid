@@ -47,6 +47,24 @@
       </ul>
       <input type="file" name="tmp-image" class="file-input-target input-hide"/>
     </div>
+    {% if commit_list != null %}
+    <div data-role="collapsible" data-content-theme="c">
+      <h2 class="add-history-collapsible">View History</h2>
+      <ul class="history-list">
+        {% for commit in commit_list %}
+          <li><button id="{{commit.id}}" class="history-btn" {%if commit.new_file%}{%assign nomore = true%}data-theme="a"{%endif%}>
+            Editor: <span class="button-secondary">{{commit.author}}</span>
+            Edited: <span class="button-secondary">{{commit.authored}}</span><br/>
+            Committer: <span class="button-secondary">{{commit.commiter}}</span>
+            Committed: <span class="button-secondary">{{commit.commited}}</span></button></li>
+        {% endfor %}
+        {% if nomore == null %}
+          <li><button id="history-more-btn">More...</button></li>
+        {% endif %}
+        <script>var page_name = "{{page.name}}"</script>
+      </ul>
+    </div>
+    {% endif %}
     <div data-role="fieldcontain">
       <label for="{{ page.name | escape }}-template">Template</label>
       <select name="template" id="{{ page.name | escape }}-template" class="select-template">
@@ -95,6 +113,7 @@
     <fieldset class="ui-grid-a">
       <div class="ui-block-a"><a class="cancel" href="/{{ page.name }}" data-role="button">Cancel</a></div>
       <div class="ui-block-b">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         {% if approving %}
         <input type="submit" data-theme="e" value="Save &amp; merge"/>
         {% else %}
