@@ -179,6 +179,11 @@ $(document).delegate(".ui-header .ui-btn-left", "click", function(e) {
     e.preventDefault();
     e.stopPropagation();
     $.mobile.back();
+    // TODO:
+    // We should really just explode this and have it be so that going to any page
+    // will scroll the page to the right position, assuming it was already loaded
+    // and we have a prevScroll for it in $.mobile.urlHistory
+    
     // The following is supposed to be accomplished by jQM itself:
     // $(document).one('pagechange', function() { window.scrollTop(prevScroll); });
     // There's some problem here where certain browsers (Chrome) don't restore
