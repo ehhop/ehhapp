@@ -159,7 +159,6 @@ module GitWiki
         if /---.*?@@.*?@@\n/m =~ commit.diffs.first.diff
           data = $'.gsub(/\\.*?$/,'').gsub(/\+(.*?)$/, '\1')
           blob = BlobAlike.new commit.diffs.first.a_path, data
-          puts 'THIS IS DATA!!!', data
           @page = Page.new blob
         else
           @page = "HISTERROR"
