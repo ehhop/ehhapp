@@ -155,12 +155,18 @@ module GitWiki
     get "/:page/history" do
       authorize! "/#{params[:page]}"
       commit = GitWiki.repository.commits(params[:commit]).first
-      if commit.diffs.first.b_blob
+      if commit.diffs.first.new_file
+        if /---.*?@@.*?@@\n/m =~ commit.diffs.first.diff
+          data = $'.gsub(/\\.*?$/,'').gsub(/\+(.*?)$/, '\1')
+          blob = BlobAlike.new commit.diffs.first.a_path, data
+          @page = Page.new blob
+        else
+          @page = "HISTERROR"
+        end
+      else
         blob= commit.diffs.first.b_blob
         blob.name= commit.diffs.first.b_path
         @page = Page.new blob
-      else
-        @page = "ERROR"
       end
       template = @page.metadata["template"]
       template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
