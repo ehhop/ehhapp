@@ -242,6 +242,11 @@
   display: none;
 }
 
+.button-secondary{
+  padding-right:1em;
+  font-weight: normal;
+}
+
 /** OTHER PAGES **/
 
 .total-sum {

@@ -130,6 +130,42 @@ $(document).delegate(".login-form", "submit", function() {
   $(this).closest(".ui-page").trigger("cleardomcache");
 });
 
+// History related stuff
+$(function(){
+  //$('ul.history-list').listview()
+  $(document).delegate(".history-btn", "click", function() {
+    window.location.replace("/"+page_name+"/history?commit="+this.id);
+  return false;});
+
+  $(document).delegate("#history-more-btn", "click", function(e) {
+    if($('.history-btn').length != 0){
+      head_id = $('.history-btn').last()[0].id
+      $.post("/"+page_name+"/history", $.param({head: head_id}), function(res){
+        for (var i = 0; i < res.result.length; i++) {
+          commit = res.result[i];
+          console.log(commit)
+          $li = $("<li>");
+          if(commit.new_file){
+            $btn = $("<button>", {'id':commit.id, 'class':'history-btn', 'data-theme':'a'});
+            $('#history-more-btn').closest('li').remove()
+          }else{
+            $btn = $("<button>", {'id':commit.id, 'class':'history-btn'});
+          }
+          $btn.append("Editor: <span class='button-secondary'>" + commit.author + "</span>")
+          $btn.append("Edited: <span class='button-secondary'>" + commit.authored + "</span><br/>")
+          $btn.append("Commiter: <span class='button-secondary'>" + commit.commiter + "</span>")
+          $btn.append("Committed: <span class='button-secondary'>" + commit.commited + "</span>")
+          $li.append($btn)
+          $('.history-btn').last().closest('li').after($li)
+          $btn.button().button('refresh')
+          //$('ul.history-list').listview('refresh');
+        }
+      }).fail(function(){console.log("more history error...");});
+    }
+  e.preventDefault();});
+});
+
+
 // File input related stuff
 $(document).delegate(".input-file-button", "click", function() {
   $(this).closest('form').find('.file-input-target').trigger('click');
