@@ -15,6 +15,9 @@ module GitWiki
       'backlink' => nil
     }
     
+    # Which metadata is safe for non-editors to change?
+    NON_EDITOR_FIELDS = ['template', 'title', 'backlink']
+    
     EMPTY_AS_HASH = {
       "name" => "",
       "body" => "",
@@ -44,12 +47,16 @@ module GitWiki
     end
     
     def self.find_and_merge(name, author = nil)
-      page_blob, foo = find_blob(name)
-      raise PageNotFound.new(name) unless page_blob
       page_blob_other, on_branch = find_blob(name, author)
       raise BranchNotFound.new(name) unless on_branch
-      page = new(page_blob, on_branch)
-      page.merged_with(author, page_blob_other)
+      raise PageNotFound.new(name) unless page_blob_other
+      page_blob, foo = find_blob(name)
+      if page_blob
+        page = new(page_blob, on_branch)
+        page.merged_with(author, page_blob_other)
+      else
+        page = new(page_blob_other, on_branch)
+      end
     end
 
     def self.find_or_create(name, author = nil)
@@ -184,8 +191,10 @@ module GitWiki
         if other_author && !other_author.empty?
           merge_and_commit!(author, new_content, other_author)
         else 
-          File.open(file_name, "w") { |f| f << new_content }
-          add_to_index_and_commit!(author);
+          Dir.chdir(self.class.repository.working_dir) do
+            File.open(file_name, "w") { |f| f << new_content }
+            add_to_index_and_commit!(author);
+          end
         end
       end # ... UNLOCK
       
@@ -259,13 +268,14 @@ module GitWiki
     # Commits the content of the file in the working directory to the master branch
     def add_to_index_and_commit!(author)
       @on_branch = nil
-      Dir.chdir(self.class.repository.working_dir) {
+      Dir.chdir(self.class.repository.working_dir) do
         self.class.repository.add(@blob.name)
-      }
+      end
       self.class.repository.commit_index(commit_message(author))
       initialize(self.class.repository.tree/(@blob.name)) # Reinitialize from the committed blob
     end
     
+    # TODO: use this method instead of the above
     # Commits new_content to the master branch without using the working directory
     def commit!(author, new_content)
       @on_branch = nil

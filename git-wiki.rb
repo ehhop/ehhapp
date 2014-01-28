@@ -267,7 +267,7 @@ module GitWiki
         notify_branch_author(@page, params[:approving], username) if params[:approving]
       elsif forking_enabled?
         # If the user is not an editor, the commit is made to a topic branch
-        new_metadata["template"] = params[:template] if params[:template]
+        Page::NON_EDITOR_FIELDS.each { |k| new_metadata[k] = params[k.to_sym] if params[k.to_sym] }
         @page.branch_content(username, params[:body], new_metadata)
         notify_page_owner(@page, username)
       else
