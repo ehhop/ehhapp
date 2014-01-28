@@ -135,7 +135,6 @@ module GitWiki
       liquid :list, :locals => {:pages => @pages, :page => {"name" => "pages"}}
     end
 
-    # TODO: We should add the ability to specify and edit a "back" destination within page metadata
     post "/:page/history" do
       authorize! "/#{params[:page]}"
       head_id = params[:head]

@@ -174,16 +174,19 @@ module GitWiki
   
     # Commits the new content to the "master" branch
     # If other_author is specified, this becomes a merge commit and that author's branch is deleted
+    # At the end of this operation, the working directory will reflect HEAD of the master branch
     def update_content(author, new_body, new_metadata = {}, other_author = nil)
       new_content = prepare_new_content(author, new_body, new_metadata)
       return if new_content == content && !merging
       
       # LOCK during this operation, which changes the working tree and index
       self.class.repo_lock do
-        File.open(file_name, "w") { |f| f << new_content }
         if other_author && !other_author.empty?
           merge_and_commit!(author, new_content, other_author)
-        else add_to_index_and_commit!(author); end
+        else 
+          File.open(file_name, "w") { |f| f << new_content }
+          add_to_index_and_commit!(author);
+        end
       end # ... UNLOCK
       
       @metadata, @body = extract_front_matter
@@ -300,8 +303,10 @@ module GitWiki
       index.commit(commit_message(author, other_author, true), parents, actor(author), nil, "master")
       # Now that it is merged, we can delete the author's topic branch.
       repo.git.branch({}, "-d", branch_name)
-      # Reinitialize this Page  object from the committed blob
+      # Reinitialize this Page object from the committed blob
       initialize(repo.tree/(name + self.class.extension))
+      # Since this changes the master branch, bring the working directory up to speed
+      repo.git.reset(:hard => true)
     end
 
     # What's the full file name pointing to this page's content in the working tree?
