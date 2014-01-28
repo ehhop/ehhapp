@@ -156,7 +156,7 @@ module GitWiki
       commit = GitWiki.repository.commits(params[:commit]).first
       if commit.diffs.first.new_file
         if /---.*?@@.*?@@\n/m =~ commit.diffs.first.diff
-          data = $'.gsub(/^\\.*?$/,'').gsub(/\+(.*?)$/, '\1')
+          data = $'.gsub(/^\\.*?$/,'').gsub(/^\+(.*?)$/, '\1')
           blob = BlobAlike.new commit.diffs.first.a_path, data
           @page = Page.new blob
         else
