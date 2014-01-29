@@ -316,7 +316,7 @@ module GitWiki
       # Reinitialize this Page object from the committed blob
       initialize(repo.tree/(name + self.class.extension))
       # Since this changes the master branch, bring the working directory up to speed
-      repo.git.reset(:hard => true)
+      Dir.chdir(repo.working_dir) { repo.git.reset(:hard => true) }
     end
 
     # What's the full file name pointing to this page's content in the working tree?
