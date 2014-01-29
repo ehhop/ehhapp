@@ -156,7 +156,7 @@ module GitWiki
       commit = GitWiki.repository.commits(params[:commit]).first
       if commit.diffs.first.new_file
         if /---.*?@@.*?@@\n/m =~ commit.diffs.first.diff
-          data = $'.gsub(/^\\.*?$/,'').gsub(/^\+(.*?)$/, '\1')
+          data = $'.gsub(/\\.*?$/,'').gsub(/\+(.*?)$/, '\1')
           blob = BlobAlike.new commit.diffs.first.a_path, data
           @page = Page.new blob
         else
@@ -180,14 +180,14 @@ module GitWiki
       # potential for amortization (request in blocks) to be implemented
       commit_display = 5
       commit_list = []
-      Grit::Commit.find_all(GitWiki.repository, 'master').each do |com|
-        if com.message =~ /#{params[:page]}\z/
-          commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
-                          "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
-                          "new_file" => com.diffs.first.new_file}
-          break unless commit_list.length < commit_display
-        end
-      end
+      # Grit::Commit.find_all(GitWiki.repository, 'master').each do |com|
+      #   if com.message =~ /#{params[:page]}\z/
+      #     commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
+      #                     "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
+      #                     "new_file" => com.diffs.first.new_file}
+      #     break unless commit_list.length < commit_display
+      #   end
+      # end
       commit_list = nil if commit_list.empty?
       ###
 
