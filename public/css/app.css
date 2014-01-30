@@ -122,7 +122,7 @@
   font-weight: bold;
 }
 
-.page-editor .mdown-editor, .page-editor pre.code {
+.page-editor .mdown-editor, .page-editor pre.code, code {
   font-family: "Bitstream Vera Sans Mono",Menlo,Consolas,monospace,serif;
 }
 
