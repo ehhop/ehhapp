@@ -28,13 +28,15 @@ class RedirectList < TemplateTransformation
           end
           parts = a_nk.content.split('|', 3)
           # Add second line to the item
-          if parts.length > 1 && parts[1].strip.length > 0
-            span_nk = Nokogiri::XML::Node.new "span", @nk
-            span_nk.content = parts[1].strip
-            span_nk["class"] = "secondary"
+          if parts.length > 1
             a_nk.content = parts[0]
-            a_nk.add_child(Nokogiri::XML::Node.new("br", @nk))
-            a_nk.add_child(span_nk)
+            if parts[1].strip.length > 0
+              span_nk = Nokogiri::XML::Node.new "span", @nk
+              span_nk.content = parts[1].strip
+              span_nk["class"] = "secondary"
+              a_nk.add_child(Nokogiri::XML::Node.new("br", @nk))
+              a_nk.add_child(span_nk)
+            end
           end
           # Add hidden tags to the item
           if parts.length > 2 && parts[2].strip.length > 0
