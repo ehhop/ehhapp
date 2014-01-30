@@ -26,13 +26,21 @@ class RedirectList < TemplateTransformation
             # Strip out paragraphs that might have crept into list items
             li_nk.children = li_nk.at_css('p:first').children
           end
-          parts = a_nk.content.split('|', 2)
-          if parts.length > 1
+          parts = a_nk.content.split('|', 3)
+          # Add second line to the item
+          if parts.length > 1 && parts[1].strip.length > 0
             span_nk = Nokogiri::XML::Node.new "span", @nk
-            span_nk.content = parts[1]
+            span_nk.content = parts[1].strip
             span_nk["class"] = "secondary"
             a_nk.content = parts[0]
             a_nk.add_child(Nokogiri::XML::Node.new("br", @nk))
+            a_nk.add_child(span_nk)
+          end
+          # Add hidden tags to the item
+          if parts.length > 2 && parts[2].strip.length > 0
+            span_nk = Nokogiri::XML::Node.new "span", @nk
+            span_nk.content = parts[2].strip
+            span_nk["class"] = "category"
             a_nk.add_child(span_nk)
           end
           if tag_next_li
@@ -108,6 +116,24 @@ MD
           <span class="secondary">to 877-372-4161</span></a></li>
       </ul> 	
   HTML
+  
+    md_example = <<-MD
+Try searching for "secret tag".
+
+You can add extra tags that can be searched for after a second pipe character.
+
+* [Different link](dest_1)
+* [You'll find me! | | secret tag](URL)
+MD
+    
+    example md_example, <<-HTML
+      <p>You can add extra tags that can be searched for after a pipe character.</p>
+      <ul data-role="listview" data-inset="true" data-filter="true" class="redirect-list"
+        data-filter-placeholder="Try searching for &quot;secret tag&quot;.">
+        <li><a href="dest_1">Different link</a></li>
+        <li><a href="URL">You'll find me!</a><span class="category">secret tag</span></li>
+      </ul>
+    HTML
  
 end
 end

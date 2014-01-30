@@ -1,5 +1,3 @@
-$(function(){
-
 // Some global variables to keep track of things.
 
 var currentUsername = null;
@@ -69,6 +67,7 @@ if (isFullScreen() && window.localStorage) {
 
 $(document).delegate(".ui-page.editor", "pageinit", function() {
   var $page = $(this);
+  console.log('hi');
   // Change the examples shown underneath the editor based on the template selected.
   $(this).find(".select-template").change(function() {
     var newTemplate = $(this).val();
@@ -233,5 +232,3 @@ $(document).delegate(".ui-header .ui-btn-left", "click", function(e) {
 //   var $page = $(this).closest('.ui-page');
 //   $(document).one("pageinit", ".ui-page", function() { if (this !== $page.get(0)) { $page.remove(); } });
 // });
-
-});
