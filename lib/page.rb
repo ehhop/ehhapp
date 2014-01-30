@@ -191,10 +191,7 @@ module GitWiki
         if other_author && !other_author.empty?
           merge_and_commit!(author, new_content, other_author)
         else 
-          Dir.chdir(self.class.repository.working_dir) do
-            File.open(file_name, "w") { |f| f << new_content }
-            add_to_index_and_commit!(author);
-          end
+          commit!(author, new_content)
         end
       end # ... UNLOCK
       
@@ -264,18 +261,7 @@ module GitWiki
       new_metadata["author"] = author
       "#{ new_metadata.to_yaml }--- \n#{ new_body }"
     end
-  
-    # Commits the content of the file in the working directory to the master branch
-    def add_to_index_and_commit!(author)
-      @on_branch = nil
-      Dir.chdir(self.class.repository.working_dir) do
-        self.class.repository.add(@blob.name)
-      end
-      self.class.repository.commit_index(commit_message(author))
-      initialize(self.class.repository.tree/(@blob.name)) # Reinitialize from the committed blob
-    end
-    
-    # TODO: use this method instead of the above
+
     # Commits new_content to the master branch without using the working directory
     def commit!(author, new_content)
       @on_branch = nil
@@ -285,6 +271,8 @@ module GitWiki
       index.add(name + self.class.extension, new_content)
       index.commit(commit_message(author), [repo.commit("master")], actor(author), nil, "master")
       initialize(repo.tree/(@blob.name)) # Reinitialize from the committed blob
+      # Since this changes the master branch, bring the working directory up to speed
+      Dir.chdir(repo.working_dir) { repo.git.reset(:hard => true) }
     end
     
     # Commits new_content to a topic branch named after the author and page name
