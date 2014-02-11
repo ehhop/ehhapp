@@ -187,6 +187,7 @@ $(document).delegate(".file-input-target", "change", function() {
         var img = new Image();
         img.src = reader.result;
         $a.find('.ui-btn-text').append(img);
+        $form.find('.upload-list').scrollLeft(1000000);
       }
       reader.readAsDataURL(file); 
     }
