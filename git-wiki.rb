@@ -88,7 +88,38 @@ module GitWiki
       end
       
       def uploads
-        Dir["./public/uploads/*"].map{|f| File.basename f}
+        Dir["./public/uploads/*"].map do |f| 
+          {
+            "name" => File.basename(f),
+            "ext" => File.extname(f).gsub(/^\./, ''),
+            "is_image" => [".jpg", ".png", ".jpeg", ".gif", ".bmp"].include?(File.extname(f))
+          }
+        end
+      end
+      
+      def save_uploads(params)
+        if params[:body]
+          new_upload_hrefs = {}
+          params.each do |key, param|
+            next unless key =~ /upload(\d*)/ && param[:filename]
+            upload_num = $1
+            append = 0
+            basename = File.basename(param[:filename], ".*").gsub(/[^A-Za-z0-9_-]/, '-') # sanitize basename
+            ext = File.extname(param[:filename])
+            # next unless [".jpg", ".png", ".jpeg", ".gif", ".bmp"].include?(ext) # validate extension
+            filename = basename + ext
+            # avoid overwriting an existing image with the same name
+            while (File.exist?("./public/uploads/#{filename}")) do
+              filename = "#{basename}-#{append += 1}#{ext}"
+            end
+            # Copy to final destination and memoize the href for this new image
+            File.open("./public/uploads/#{filename}", "wb") { |f| f.write(param[:tempfile].read) }
+            new_upload_hrefs[upload_num] = "/download/#{filename}"
+          end
+          # Substitute temporary hrefs to newly uploaded images with their actual post-upload href
+          # e.g., uploaded smiley.jpg as (1), then "[alt text](1)" --> "[alt text](smiley.jpg)"
+          params[:body].gsub!(/\[(.*?)\]\((\d*)\)/) {"[#{$1}](#{new_upload_hrefs[$2]})"}
+        end
       end
       
       def header(page, and_these = {})
@@ -204,7 +235,7 @@ module GitWiki
     end
 
     get '/download/:filename' do |filename|
-      send_file "./public/uploads/#{filename}", :filename => filename
+      send_file "./public/uploads/#{filename}"
     end
 
     get "/:page/?:username?" do
@@ -236,30 +267,8 @@ module GitWiki
       @page = Page.find_or_create(params[:page], username)
       new_metadata = @page.metadata.clone
 
-      # Save and rename uploaded images
-      if params[:body]
-        new_image_hrefs = {}
-        params.each do |key, param|
-          if key =~ /image(\d*)/ && param[:filename]
-            image_num = $1
-            append = 0
-            basename = File.basename(param[:filename], ".*").gsub(/[^A-Za-z0-9_-]/, '-') # sanitize basename
-            ext = File.extname(param[:filename])
-            continue unless [".jpg", ".png", ".jpeg", ".gif", ".bmp"].include?(ext) # validate extension
-            filename = basename + ext
-            # avoid overwriting an existing image with the same name
-            while (File.exist?("./public/uploads/#{filename}")) do
-              filename = "#{basename}-#{append += 1}#{ext}"
-            end
-            # Copy to final destination and memoize the href for this new image
-            File.open("./public/uploads/#{filename}", "wb") { |f| f.write(param[:tempfile].read) }
-            new_image_hrefs[image_num] = "/download/#{filename}"
-          end
-        end
-        # Substitute temporary hrefs to newly uploaded images with their actual post-upload href
-        # e.g., uploaded smiley.jpg as (1), then "![alt text](1)" --> "![alt text](smiley.jpg)"
-        params[:body].gsub!(/!\[(.*?)\]\((\d*)\)/) {"![#{$1}](#{new_image_hrefs[$2]})"}
-      end
+      # Save and rename uploaded images and rewrite temporary href's in the body with the permanent ones
+      save_uploads(params)
 
       if @is_editor || !auth_enabled?
         Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }

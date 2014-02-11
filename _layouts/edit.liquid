@@ -40,8 +40,13 @@
       <h2 class="add-image-collapsible">Adding images</h2>
       <ul class="upload-list">
         {% for u in uploads %}
-        <li><a href="javascript:void(0)" data-role="button" data-shadow="false" class="insert-image">
-          <img src="/download/{{ u }}"/></a></li>
+          {% if u.is_image %}
+          <li><a href="javascript:void(0)" data-role="button" data-shadow="false" class="insert-image">
+            <img src="/download/{{ u.name }}"/></a></li>
+          {% else %}
+          <li><a href="javascript:void(0)" data-is-file="true" data-role="button" data-shadow="false" class="insert-image">
+            <img class="file-icon" src="/images/icons/{{ u.ext }}.png"/><span class="file-name">{{ u.name }}</span></a></li>
+          {% endif %}
         {% endfor %}
         <li><a href="javascript:void(0)" class="input-file-button" data-role="button" data-theme="b">Upload&hellip;</a></li>
       </ul>

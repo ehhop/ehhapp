@@ -238,6 +238,16 @@
   max-height: 100%;
 }
 
+.page-editor .upload-list li .file-name {
+  display: block;
+  max-width: 80px;
+  white-space: normal;
+  font-size: 10px;
+  max-height: 37px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 .input-hide {
   display: none;
 }

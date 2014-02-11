@@ -173,14 +173,15 @@ $(document).delegate(".file-input-target", "change", function() {
   var filename = $(this).val().replace(/^.*[\\\/]/, ''),
     $form = $(this).closest('form'),
     $ul = $form.find(".upload-list"),
-    numNewImages = $ul.children('.new-image').length + 1,
-    $li = $('<li class="new-image"/>').insertBefore($ul.find('.input-file-button').closest('li')),
+    numNewUploads = $ul.children('.new-upload').length + 1,
+    $li = $('<li class="new-upload"/>').insertBefore($ul.find('.input-file-button').closest('li')),
     $a = $('<a data-role="button" data-shadow="false" class="insert-image"/>').appendTo($li);
-  $a.button().data('img-href', numNewImages.toString()).click();
+  $a.button().data('img-href', numNewUploads.toString());
   $(this).after('<input type="file" name="tmp-image" class="file-input-target input-hide"/>');
-  $(this).attr('name', 'image' + numNewImages).removeClass('file-input-target');
+  $(this).attr('name', 'upload' + numNewUploads).removeClass('file-input-target');
   if (FileReader) {
-    var file = $(this).get(0).files[0];
+    var file = $(this).get(0).files[0],
+      extension = file.name.split('.').pop();
     if (file.type.match(/image.*/)) {
       var reader = new FileReader();
       reader.onload = function(e) {
@@ -190,15 +191,23 @@ $(document).delegate(".file-input-target", "change", function() {
         $form.find('.upload-list').scrollLeft(1000000);
       }
       reader.readAsDataURL(file); 
+    } else {
+      var $img = $('<img class="file-icon"/>').attr('src', '/images/icons/' + extension + ".png"),
+        $span = $('<span class="file-name"/>').text(file.name);
+      $a.data('is-file', true);
+      $a.find('.ui-btn-text').append($img).append($span);
     }
+    $a.data('img-basename', file.name).click();
   }
 });
 
 $(document).delegate(".insert-image", "click", function() {
-  var $form = $(this).closest('form'),
-    href = $(this).data('img-href') || $(this).find('img').eq(0).attr('src'),
-    basename = href.replace(/^.*[\\\/]/, '');
-  insertAtCaret($form.find('.mdown-editor'), '![Description for '+basename+']('+href+')');
+  var $a = $(this),
+    $form = $a.closest('form'),
+    href = $a.data('img-href') || $a.find('img').eq(0).attr('src'),
+    basename = $a.data('img-basename') || href.replace(/^.*[\\\/]/, ''),
+    imgBang = $a.data('is-file') ? '' : '!';
+  insertAtCaret($form.find('.mdown-editor'), imgBang + '['+basename+']('+href+')');
 });
 
 // Whenever the user clicks a back button in the top toolbar,
