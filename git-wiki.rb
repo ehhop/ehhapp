@@ -113,7 +113,7 @@ module GitWiki
             end
             # Copy to final destination and memoize the href for this new image
             File.open("./public/uploads/#{filename}", "wb") { |f| f.write(param[:tempfile].read) }
-            new_upload_hrefs[upload_num] = "/download/#{filename}"
+            new_upload_hrefs[upload_num] = "/uploads/#{filename}"
           end
           # Substitute temporary hrefs to newly uploaded images with their actual post-upload href
           # e.g., uploaded smiley.jpg as (1), then "[alt text](1)" --> "[alt text](smiley.jpg)"
@@ -233,6 +233,7 @@ module GitWiki
           :mdown_examples => GitWiki.mdown_examples, :approving => true)
     end
 
+    # TODO: deprecate this, we now write /uploads/ straight into the markdown
     get '/download/:filename' do |filename|
       redirect "/uploads/#{filename}"
     end

@@ -129,8 +129,8 @@ module GitWiki
     end
     
     def to_html
-      # wiki_link content and translate to HTML
-      html = RDiscount.new(wiki_link(body)).to_html
+      # Translate to HTML
+      html = RDiscount.new(body).to_html
       # Apply appropriate post-translational modifications based on specified template
       begin
         if metadata["template"]
@@ -327,13 +327,6 @@ module GitWiki
       else
         "#{author} #{new? ? 'created' : 'updated'} #{name}"
       end
-    end
-
-    def wiki_link(str)
-      str.gsub(/\[\[ *([a-z]+[A-Za-z0-9_-]+) *\]\]/) { |m|
-        %Q{<a class="#{self.class.css_class_for($1)}"} +
-          %Q{href="/#{$1}">#{$1}</a>}
-      }
     end
   end
 

@@ -6,8 +6,17 @@ module GitWiki
   class TemplateTransformation
     
     def initialize(html, page=nil)
-      @html = html
       @nk = Nokogiri::HTML.fragment(html, "UTF-8")
+      
+      # Default transformations can be added here
+      # Any links that point to the /download or /uploads directory should have data-ajax="false"
+      @nk.css('a').each do |a_nk|
+        if a_nk['href'] =~ /^\/(uploads|download)\//
+          a_nk['data-ajax'] = "false"
+        end
+      end
+      
+      @html = @nk.to_html
       @page = page
     end
   
