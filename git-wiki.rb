@@ -234,7 +234,7 @@ module GitWiki
     end
 
     get '/download/:filename' do |filename|
-      send_file "./public/uploads/#{filename}"
+      redirect "/uploads/#{filename}"
     end
 
     get "/:page/?:username?" do
