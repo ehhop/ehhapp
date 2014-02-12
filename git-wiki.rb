@@ -87,7 +87,7 @@ module GitWiki
       end
       
       def uploads
-        Dir["./public/uploads/*"].map do |f| 
+        Dir["./public/uploads/*"].sort_by{|f| File.stat(f).mtime }.map do |f| 
           {
             "name" => File.basename(f),
             "ext" => File.extname(f).gsub(/^\./, ''),
