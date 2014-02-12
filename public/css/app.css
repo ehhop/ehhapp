@@ -240,7 +240,8 @@
 
 .page-editor .upload-list li .file-name {
   display: block;
-  max-width: 80px;
+  max-width: 100px;
+  margin: 0 -10px;
   white-space: normal;
   font-size: 10px;
   max-height: 37px;

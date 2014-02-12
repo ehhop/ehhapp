@@ -197,7 +197,7 @@ $(document).delegate(".file-input-target", "change", function() {
       $a.data('is-file', true);
       $a.find('.ui-btn-text').append($img).append($span);
     }
-    $a.data('img-basename', file.name).click();
+    $a.data('img-basename', file.name.replace(/([^.]+)\.\w+$/, '$1')).click();
   }
 });
 
