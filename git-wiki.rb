@@ -61,9 +61,8 @@ module GitWiki
     set :app_file, __FILE__
     set :views, [settings.root + '/templates', settings.root + '/_layouts']
     
-    use Rack::Session::Cookie
-    use Rack::Csrf, :raise => true, :skip => ['POST:/.*/history', 'POST:/login']
     register Sinatra::EmailAuth
+    use Rack::Csrf, :raise => true, :skip => ['POST:/.*/history', 'POST:/login']
     set :config, GitWiki.config
     
     # Allow templates in multiple folders.  The ones in _layouts are special and
