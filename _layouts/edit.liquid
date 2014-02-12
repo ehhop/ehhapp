@@ -41,10 +41,12 @@
       <ul class="upload-list">
         {% for u in uploads %}
           {% if u.is_image %}
-          <li><a href="javascript:void(0)" data-role="button" data-shadow="false" class="insert-image">
+          <li><a href="javascript:void(0)" data-role="button" data-shadow="false" class="insert-image"
+            title="{{ u.name }}">
             <img src="/download/{{ u.name }}"/></a></li>
           {% else %}
-          <li><a href="javascript:void(0)" data-is-file="true" data-role="button" data-shadow="false" class="insert-image">
+          <li><a href="javascript:void(0)" data-is-file="true" data-role="button" data-shadow="false" class="insert-image"
+            title="{{ u.name }}">
             <img class="file-icon" src="/images/icons/{{ u.ext }}.png"/><span class="file-name">{{ u.name }}</span></a></li>
           {% endif %}
         {% endfor %}
