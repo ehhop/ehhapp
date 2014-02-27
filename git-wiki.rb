@@ -6,6 +6,7 @@ require "yaml"
 require "require_all"
 require "rdiscount"
 require "pp"
+require "./wiki_pstore.rb"
 
 require_all "lib/"
 
@@ -164,26 +165,81 @@ module GitWiki
       @pages = Page.find_all(&:metadata_hash)
       liquid :list, :locals => {:pages => @pages, :page => {"name" => "pages"}}
     end
-
-    post "/:page/history" do
-      authorize! "/#{params[:page]}"
-      head_id = params[:head]
-      commit_display = 5
-      commit_list = []
-      Grit::Commit.find_all(GitWiki.repository, head_id, {:skip => 1}).each do |com|
-        if com.message =~ /#{params[:page]}\z/
-          commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
-                          "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s,
-                          "new_file" => com.diffs.first.new_file}
-          break unless commit_list.length < commit_display
-        end
-      end
-      json :result => commit_list
-    end
-
+ 
     get "/:page/history" do
       authorize! "/#{params[:page]}"
-      commit = GitWiki.repository.commits(params[:commit]).first
+      commit_id = Integer(params[:commit])
+      commit_list = []
+      store  = PStore.new(File.expand_path("ehhapp_wiki.pstore", Dir.tmpdir))
+      store.transaction(true)do
+        commit_list = store[params[:page]]
+      end
+      com = GitWiki.repository.commits(commit_list[commit_id], 1).first
+      diff = com.diffs.first
+      page_content = ""
+      unless diff.new_file
+        blob= diff.b_blob
+        blob.name= diff.b_path
+        @page = Page.new blob
+        if /---.*?@@.*?@@\n/m =~ diff.diff 
+          if $' =~ /\A\s---[ \t]*\n.*?\n?^\s---[ \t]*$\n?/m
+            $'.each_line do |line|
+              if line =~ /^\+.*?$/
+                page_content += "<div class=\"plus\">"+line+"</div>"
+              elsif line =~ /^-.*?$/
+                page_content += "<div class=\"minus\">"+line+"</div>"
+              else
+                page_content += "<div class=\"comment\">"+line+"</div>"
+              end
+            end
+          else
+            page_content += "<div class=\"comment\">"+"NO CHANGES"+"</div>"
+          end
+        else
+          page_content += "ERROR Please contact admin."
+        end
+      else
+        if /---.*?@@.*?@@\n/m =~ diff.diff
+          data = $'.gsub(/\\.*?$/,'').gsub(/\+(.*?)$/, '\1')
+          blob = BlobAlike.new diff.a_path, data
+          @page = Page.new blob
+        else
+          page_content += "ERROR Please contact admin."
+        end
+      end
+      
+      liquid :history, :locals => locals(@page, :header => header(@page, :for_approval => false), :page_content => page_content)
+    end
+  
+    post "/:page/history" do
+      authorize! "/#{params[:page]}"
+      head_id = Integer(params[:head])
+      initial_display = 5
+      store  = PStore.new(File.expand_path("ehhapp_wiki.pstore", Dir.tmpdir))
+      commit_list = []
+      store.transaction(true)do
+        commit_list = store[params[:page]]
+      end
+      i=head_id
+      short_list = []
+      while i>0 and head_id-i<initial_display do
+        i-=1
+        com = GitWiki.repository.commits(commit_list[i], 1).first
+        short_list << {"id" => i, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"),
+                       "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
+                       "new_file" => com.diffs.first.new_file}
+      end
+      json :result => short_list
+    end
+
+    get "/:page/render" do
+      authorize! "/#{params[:page]}"
+      store  = PStore.new(File.expand_path("ehhapp_wiki.pstore", Dir.tmpdir))
+      commit_list = []
+      store.transaction(true)do
+        commit_list = store[params[:page]]
+      end
+      commit = GitWiki.repository.commits(commit_list(Integer(params[:commit])), 1).first
       if commit.diffs.first.new_file
         if /---.*?@@.*?@@\n/m =~ commit.diffs.first.diff
           data = $'.gsub(/\\.*?$/,'').gsub(/\+(.*?)$/, '\1')
@@ -208,21 +264,41 @@ module GitWiki
 
       ### Generate initial commits to display
       # potential for amortization (request in blocks) to be implemented
-      commit_display = 5
+      #withdraw_amt = 25
+      #skip=0
+      #commit_list = []
+      #while commit_list.length < initial_display do 
+        #GitWiki.repository.commits('master', withdraw_amt, skip).each do |com|
+        #  if com.message =~ /#{params[:page]}\z/
+        #    commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
+        #                  "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
+        #                  "new_file" => com.diffs.first.new_file}
+        #  end
+        #  skip = skip + withdraw_amt
+        #  break unless commit_list.length < initial_display
+        #end
+      #end
+      initial_display = 7
+      store  = PStore.new(File.expand_path("ehhapp_wiki.pstore", Dir.tmpdir))
       commit_list = []
-      # Grit::Commit.find_all(GitWiki.repository, 'master').each do |com|
-      #   if com.message =~ /#{params[:page]}\z/
-      #     commit_list << {"id" => com.id, "author" => com.author.to_s, "authored" => com.authored_date.strftime("%T on %m/%d/%Y"), 
-      #                     "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
-      #                     "new_file" => com.diffs.first.new_file}
-      #     break unless commit_list.length < commit_display
-      #   end
-      # end
-      commit_list = nil if commit_list.empty?
+      store.transaction(true)do
+        commit_list = store[params[:page]]
+      end
+      i=commit_list.length
+      short_list = []
+      while i>0 and commit_list.length-i<initial_display do
+        i-=1
+        com = GitWiki.repository.commits(commit_list[i], 1).first
+        short_list << {"id" => i, "author" => com.author.to_s, 
+                       "authored" => com.authored_date.strftime("%T on %m/%d/%Y"),
+                       "commited" => com.committed_date.strftime("%T on %m/%d/%Y"), "commiter" => com.committer.to_s, 
+                       "new_file" => com.diffs.first.new_file}
+      end
+      short_list = nil if short_list.empty?
       ###
 
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
-          :mdown_examples => GitWiki.mdown_examples, :commit_list => commit_list)
+          :mdown_examples => GitWiki.mdown_examples, :commit_list => short_list)
     end
     
     get "/:page/approve/:username" do
