@@ -10,7 +10,7 @@
   <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
     {% endif %}
   {% endif %}
-  <h1>{% if page.metadata.title != '' %}{{ page.metadata.title }}{% else %}EHHapp{% endif %}</h1>
+  <h1>{% if page.metadata.title != '' %}{{ page.metadata.title }}{% else %}{{ default_title }}{% endif %}</h1>
   {% if for_approval and page.on_branch %}
   <a class="ui-btn-right" data-theme="b" href="/{{ page.name }}/approve/{{ page.metadata.author }}" 
     data-icon="pencil">Edit &amp; Merge</a>

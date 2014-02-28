@@ -135,6 +135,7 @@ module GitWiki
           :templates => templates,
           :uploads => uploads,
           :editors => editors,
+          :default_title => settings.config["default_title"],
           :footer_links => settings.config["footer_links"],
           :csrf_token => Rack::Csrf.csrf_token(env)
         }.merge(and_these)

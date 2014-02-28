@@ -1,6 +1,6 @@
 <div data-role="header" class="{% if page.on_branch %}on-branch{% endif %}">
   <a class="ui-btn-left" data-icon="back" data-rel="back">Back</a>
-  <h1>EHHapp</h1>
+  <h1>{{ default_title }}</h1>
   <a class="ui-btn-right" data-theme="" href="/{{ page.name }}/edit" data-icon="pencil">Create</a>
   
   {% if just_auth %}

@@ -38,6 +38,8 @@ module Sinatra
         settings.config["auth"] || {}
       end
       
+      def default_title; settings.config["default_title"]; end
+      
       def auth_enabled?
         !!auth_settings["enabled"]
       end
@@ -101,7 +103,7 @@ module Sinatra
         mail = Mail.new
         mail.from = auth_settings["mail_from"]
         mail.to = "#{username}@#{auth_settings["mail_domain"]}"
-        mail.subject = "EHHapp Authentication Request"
+        mail.subject = "#{default_title} Authentication Request"
         mail.body = sprintf(auth_settings["mail_body"], session[:key])
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
         mail.deliver_and_fallback!
@@ -113,7 +115,7 @@ module Sinatra
         mail = Mail.new
         mail.from = auth_settings["mail_from"]
         mail.to = "#{page.metadata["owner"] || editors.first}@#{auth_settings["mail_domain"]}"
-        mail.subject = "EHHapp changes submitted by #{author} for #{page.name}"
+        mail.subject = "#{default_title} changes submitted by #{author} for #{page.name}"
         mail.body = sprintf(settings.config["fork_notify_message"], author, version_url)
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
         mail.deliver_and_fallback!
@@ -123,7 +125,7 @@ module Sinatra
         mail = Mail.new
         mail.from = auth_settings["mail_from"]
         mail.to = "#{author}@#{auth_settings["mail_domain"]}"
-        mail.subject = "EHHapp changes accepted by #{editor} for #{page.name}"
+        mail.subject = "#{default_title} changes accepted by #{editor} for #{page.name}"
         mail.body = sprintf(settings.config["fork_accepted_message"], editor, url("/#{page.name}"))
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
         mail.deliver_and_fallback!
