@@ -262,11 +262,6 @@
   font-weight: normal;
 }
 
-/** Diff Page **/
-.comment  { color: gray;      }
-.plus     { background: #dfd; }
-.minus    { background: #fdd; }
-
 /** OTHER PAGES **/
 
 .total-sum {

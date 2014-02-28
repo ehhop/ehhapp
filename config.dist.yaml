@@ -70,7 +70,7 @@ default_title: EHHapp
 footer_links:
     - {icon: "info", title: "FAQ", page: "FAQ"}
     - {icon: "phone", title: "Contact", page: "phone"}
-    - {icon: "fahome", title: "Patient Services", page: "index"}
+    - {icon: "fahome", title: "Home", page: "index"}
     - {icon: "faplus", title: "Rx", page: "Formulary"}
     - {icon: "file", title: "Docs", page: "documents"}
 
