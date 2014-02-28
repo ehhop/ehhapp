@@ -67,6 +67,8 @@ auth:
 
 default_title: EHHapp
 
+touch_icon: /images/ehhapp.png
+
 footer_links:
     - {icon: "info", title: "FAQ", page: "FAQ"}
     - {icon: "phone", title: "Contact", page: "phone"}
