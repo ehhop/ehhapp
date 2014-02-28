@@ -262,6 +262,7 @@ module GitWiki
       "#{ new_metadata.to_yaml }--- \n#{ new_body }"
     end
 
+    # TODO: Test if this method works for the first commit in an empty repo
     # Commits new_content to the master branch without using the working directory
     def commit!(author, new_content)
       @on_branch = nil
@@ -269,19 +270,21 @@ module GitWiki
       index = repo.index
       index.read_tree("master")
       index.add(name + self.class.extension, new_content)
-      index.commit(commit_message(author), [repo.commit("master")], actor(author), nil, "master")
+      parents = [repo.commit("master")].compact
+      index.commit(commit_message(author), parents, actor(author), nil, "master")
       initialize(repo.tree/(@blob.name)) # Reinitialize from the committed blob
       # Since this changes the master branch, bring the working directory up to speed
       Dir.chdir(repo.working_dir) { repo.git.reset(:hard => true) }
     end
     
+    # TODO: Test if this method works for the first commit in an empty repo
     # Commits new_content to a topic branch named after the author and page name
     # e.g. "alex.jones/this_page"
     def branch_and_commit!(author, new_content)
       @on_branch = "#{author}/#{name}"
       repo = self.class.repository
       index = repo.index
-      parents = [repo.commit(@on_branch) || repo.commit("master")]
+      parents = [repo.commit(@on_branch) || repo.commit("master")].compact
       index.read_tree(repo.commit(@on_branch) ? @on_branch : "master")
       index.add(name + self.class.extension, new_content)
       index.commit(commit_message(author, true), parents, actor(author), nil, @on_branch)
@@ -293,7 +296,7 @@ module GitWiki
     def merge_and_commit!(author, new_content, other_author)
       repo = self.class.repository
       branch_name = "#{other_author}/#{name}"
-      raise BranchNotFound if !repo.commit(branch_name)
+      raise BranchNotFound unless repo.commit(branch_name) && repo.commit("master")
       index = repo.index
       parents = [repo.commit("master"), repo.commit(branch_name)]
       index.read_tree("master")
