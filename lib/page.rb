@@ -12,7 +12,8 @@ module GitWiki
       'author' => nil,
       'last_modified' => nil,
       'owner' => nil,
-      'backlink' => nil
+      'backlink' => nil,
+      'accessibility' => 'Public'
     }
     
     # Which metadata is safe for non-editors to change?

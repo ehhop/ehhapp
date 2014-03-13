@@ -135,6 +135,7 @@ module GitWiki
           :templates => templates,
           :uploads => uploads,
           :editors => editors,
+          :page_levels => page_levels,
           :default_title => settings.config["default_title"],
           :touch_icon => settings.config["touch_icon"],
           :footer_links => settings.config["footer_links"],
@@ -252,6 +253,7 @@ module GitWiki
           # Get the user's unapproved version of the page, if logged in and it exists.
           # Otherwise, get the current approved version from the master branch
           @page = Page.find(params[:page], forking_enabled? && username)
+          accessible! @page
         end
         template = @page.metadata["template"]
         template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show

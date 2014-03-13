@@ -34,6 +34,26 @@ module Sinatra
     self.store = nil
 
     module Helpers
+
+      # page levels
+      def page_levels
+        ["Public", "Authorized Users Only"]
+      end
+
+      def accessible?(page)
+        true
+        false if page.metadata["accessibility"] == "Authorized Users Only" and !authorized?
+      end
+
+      def accessible!(page)
+        unless accessible?(page) or !auth_enabled?
+          session[:auth_next_for] = request.path_info
+          session[:auth_cancel] = cancel_path || request.path_info
+          redirect "/login"
+        end
+      end
+      ### page levels
+
       def auth_settings
         settings.config["auth"] || {}
       end

@@ -82,6 +82,23 @@
       </select>
     </div>
     {% endif %}
+
+    {% if is_editor %}
+    <div data-role="fieldcontain">
+      <label for="{{ page.name | escape }}-accessibility">Accessibility</label>
+      <select name="accessibility" id="{{ page.name | escape }}-accessibility" class="select-editor">
+        {% for lvl in page_levels %}
+        <option value="{{ lvl }}"{% if page.metadata.accessibility == lvl %}selected{% endif %}>{{ lvl }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% else %}
+    <div class="metadata">
+      <p class="accessibility">
+        <b>Accessibility: </b>{% if page.metadata.accessibility %}{{ page.metadata.accessibility }}{% else %}{{ page_levels | first }}{% endif %}
+      </p>
+    </div>
+    {% endif %}
     <div class="metadata">
       {% if page.metadata.author and page.metadata.author != '' %}
       <p class="authorship">
@@ -96,6 +113,7 @@
       </p>
       {% endunless %}
     </div>
+    
     {% if approving %}
     <input type="hidden" name="approving" value="{{ page.metadata.author | escape }}"/>
     {% endif %}
