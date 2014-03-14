@@ -41,16 +41,10 @@ module Sinatra
       end
 
       def accessible?(page)
-        if "Authorized Users Only".eql?(page.metadata["accessibility"]) and !authorized?
-          false
-        else
-          true
-        end
+        ("Authorized Users Only".eql?(page.metadata["accessibility"]) and !authorized?) ? false : true
       end
 
-      def accessible!(page) 
-        puts "ACCESSIBLE #{page.metadata["accessibility"]}" if accessible?(page)
-        puts "NOT ACCESSIBLE #{page.metadata["accessibility"]}" unless accessible?(page)
+      def accessible!(page)
         unless accessible?(page) or !auth_enabled?
           session[:auth_next_for] = request.path_info
           session[:auth_cancel] = request.path_info
