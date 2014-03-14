@@ -48,7 +48,7 @@ module Sinatra
       def accessible!(page)
         unless accessible?(page) or !auth_enabled?
           session[:auth_next_for] = request.path_info
-          session[:auth_cancel] = cancel_path || request.path_info
+          session[:auth_cancel] = request.path_info
           redirect "/login"
         end
       end
