@@ -56,6 +56,9 @@ module GitWiki
   
   class InvalidPageName < PageNotFound
   end
+  
+  class UploadNotFound < PageNotFound
+  end
  
   class App < Sinatra::Base
     set :app_file, __FILE__
@@ -124,30 +127,36 @@ module GitWiki
       def header(page, and_these = {})
         liquid :header, :layout => false, :locals => locals(page, and_these)
       end
+      
+      def title(page_hash = nil)
+        if page_hash && page_hash['name'] != GitWiki.homepage
+          page_title = page_hash['metadata'] && page_hash['metadata']['title']
+          page_title = page_title.to_s != '' ? page_title : page_hash['name']
+          "#{settings.config['default_title']} - #{page_title}"
+        else
+          settings.config["default_title"]
+        end
+      end
             
       def locals(page, and_these = {})
+        page_hash = page.to_hash
         {
           :just_auth => @just_auth, 
           :username => @username,
-          :page => page.to_hash,
+          :page => page_hash,
           :nocache => false,
           :is_editor => @is_editor,
           :templates => templates,
           :uploads => uploads,
           :editors => editors,
           :page_levels => page_levels,
-          :default_title => settings.config["default_title"],
+          :title => title(page_hash),
           :touch_icon => settings.config["touch_icon"],
           :footer_links => settings.config["footer_links"],
           :csrf_token => Rack::Csrf.csrf_token(env)
         }.merge(and_these)
       end
     end
-
-    # error PageNotFound do
-    #   page = request.env["sinatra.error"].name
-    #   redirect "/#{page}/edit" unless ["favicon.ico"].include? page
-    # end
 
     before do
       content_type "text/html", :charset => "utf-8"
@@ -237,32 +246,40 @@ module GitWiki
     end
 
     # TODO: deprecate this, we now write /uploads/ straight into the markdown
+    # and all uploads live in public/uploads so the webserver can serve them
     get '/download/:filename' do |filename|
       redirect "/uploads/#{filename}"
     end
+    
+    # If an upload wasn't found, it will drop through to Sinatra and we have to handle it
+    get '/uploads/:filename' do |filename|
+      raise UploadNotFound.new(filename)
+    end
 
     get "/:page/?:username?" do
-      begin
-        if params[:username]
-          # An editor is looking at somebody else's changes to a page
-          authorize! "/#{params[:page]}/#{params[:username]}"
-          redirect "/#{params[:page]}" unless @is_editor && forking_enabled?
-          for_approval = true
-          @page = Page.find_and_merge(params[:page], params[:username])
-        else
-          # Get the user's unapproved version of the page, if logged in and it exists.
-          # Otherwise, get the current approved version from the master branch
-          @page = Page.find(params[:page], forking_enabled? && username)
-          accessible! @page
-        end
-        template = @page.metadata["template"]
-        template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
-        # TODO: make header able to swap login/logout button to back button set in page metadata
-        liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
-      rescue PageNotFound => err
-        empty_page = Page.empty_as_hash(err.name)
-        liquid :error, :locals => locals(empty_page, :header => header(empty_page, :error => true), :error => err.to_hash)
+      if params[:username]
+        # An editor is looking at somebody else's changes to a page
+        authorize! "/#{params[:page]}/#{params[:username]}"
+        redirect "/#{params[:page]}" unless @is_editor && forking_enabled?
+        for_approval = true
+        @page = Page.find_and_merge(params[:page], params[:username])
+      else
+        # Get the user's unapproved version of the page, if logged in and it exists.
+        # Otherwise, get the current approved version from the master branch
+        @page = Page.find(params[:page], forking_enabled? && username)
+        enforce_page_access! @page
       end
+      template = @page.metadata["template"]
+      template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
+      # TODO: make header able to swap login/logout button to back button set in page metadata
+      liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
+    end
+    
+    error PageNotFound do
+      err = env['sinatra.error']
+      status 200 if request.xhr?  # Suppress the 404 if jQuery Mobile fetched this with AJAX
+      empty_page = Page.empty_as_hash(err.name)
+      liquid :error, :locals => locals(empty_page, :header => header(empty_page, :error => true), :error => err.to_hash)
     end
 
     post "/:page" do

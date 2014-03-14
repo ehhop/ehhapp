@@ -34,25 +34,7 @@ module Sinatra
     self.store = nil
 
     module Helpers
-
-      # page levels
-      def page_levels
-        ["Public", "Authorized Users Only"]
-      end
-
-      def accessible?(page)
-        ("Authorized Users Only".eql?(page.metadata["accessibility"]) and !authorized?) ? false : true
-      end
-
-      def accessible!(page)
-        unless accessible?(page) or !auth_enabled?
-          session[:auth_next_for] = request.path_info
-          session[:auth_cancel] = request.path_info
-          redirect "/login"
-        end
-      end
-      ### page levels
-
+      
       def auth_settings
         settings.config["auth"] || {}
       end
@@ -101,6 +83,7 @@ module Sinatra
       def authorize!(cancel_path = nil)
         unless authorized? or !auth_enabled?
           session[:auth_next_for] = request.path_info
+          session[:auth_reason] = nil
           session[:auth_cancel] = cancel_path || request.path_info
           redirect "/login"
         end
@@ -206,16 +189,39 @@ module Sinatra
       def auth_locals(and_these = {})
         {
           :auth_enabled => auth_enabled?,
+          :auth_reason => session[:auth_reason],
           :nocache => true,
           :domain => auth_settings["mail_domain"],
           :max_failures => auth_settings["max_failures"],
           :sent_to => session[:username],
           :just_auth => session[:just_auth],
+          :title => "#{default_title} - Login",
           :footer_links => footer_links
         }.merge(and_these)
       end
-    end
+      
+      ### page accessibility (private pages)
+      def page_levels
+        ["Public", "Authorized Users Only"]
+      end
 
+      def accessible?(page)
+        authorized? || page.metadata["accessibility"] != "Authorized Users Only"
+      end
+
+      def enforce_page_access!(page)
+        unless accessible?(page) or !auth_enabled?
+          session[:auth_next_for] = request.path_info
+          session[:auth_reason] = "You must login to view this page."
+          session[:auth_cancel] = request.path_info
+          redirect "/login"
+        end
+      end
+      
+    end  ### end module Helpers
+
+    # define routes for EmailAuth
+    
     def self.registered(app)
       app.use Rack::Session::File, :expire_after => (60 * 60 * 24 * 90)   # 90 days
 
@@ -266,7 +272,8 @@ module Sinatra
       
       app.get "/logout" do
         logout! if params[:confirm]
-        liquid :logout, :locals => {:footer_links => footer_links, :confirmed => !!params[:confirm]}
+        title = "#{default_title} - Logout"
+        liquid :logout, :locals => {:footer_links => footer_links, :confirmed => !!params[:confirm], :title => title}
       end
       
     end

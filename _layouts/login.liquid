@@ -60,7 +60,12 @@
   {% else %}
   
   <p>
-    You must login to submit changes.  Please provide your
+    {% if auth_reason %}
+      {{ auth_reason }}
+    {% else %}
+      You must login to submit changes.
+    {% endif %}
+    Please provide your
     <strong>@{{ domain | escape }}</strong> address, and we will email you a six-digit
     code to authorize you to this device or browser.
   </p>
