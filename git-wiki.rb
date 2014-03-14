@@ -63,7 +63,7 @@ module GitWiki
   class App < Sinatra::Base
     set :app_file, __FILE__
     set :views, [settings.root + '/templates', settings.root + '/_layouts']
-    
+
     register Sinatra::EmailAuth
     use Rack::Csrf, :raise => true, :skip => ['POST:/.*/history', 'POST:/login']
     set :config, GitWiki.config

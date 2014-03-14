@@ -4,6 +4,7 @@ require 'securerandom'
 require 'mail'
 require 'tempfile'
 require 'pstore'
+require 'fileutils'
 
 # A quick monkey-patch to always try sending mails first via local SMTP and then sendmail.
 module Mail
@@ -34,7 +35,7 @@ module Sinatra
     self.store = nil
     
     # Levels of visibility that can be set for each page.
-    PAGE_LEVELS = {"public" => "Public", "private" => "Logged-in users only"}
+    PAGE_LEVELS ||= {"public" => "Public", "private" => "Logged-in users only"}
 
     module Helpers
       
@@ -227,9 +228,13 @@ module Sinatra
     # define routes for EmailAuth
     
     def self.registered(app)
-      app.use Rack::Session::File, :expire_after => (60 * 60 * 24 * 90)   # 90 days
-
       app.helpers EmailAuth::Helpers
+      
+      session_store = "#{Dir.tmpdir}/rack-sessions"
+      FileUtils.mkdir_p session_store
+      
+      app.use Rack::Session::File, :expire_after => (60 * 60 * 24 * 90), # 90 days
+          :store => session_store
 
       app.get "/login" do
         cancel = session[:auth_cancel] || "/"
