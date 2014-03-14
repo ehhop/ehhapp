@@ -233,8 +233,7 @@ module Sinatra
       session_store = "#{Dir.tmpdir}/rack-sessions"
       FileUtils.mkdir_p session_store
       
-      app.use Rack::Session::File, :expire_after => (60 * 60 * 24 * 90), # 90 days
-          :store => session_store
+      app.use Rack::Session::File, :expire_after => (60 * 60 * 24 * 90), :storage => session_store
 
       app.get "/login" do
         cancel = session[:auth_cancel] || "/"
