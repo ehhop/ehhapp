@@ -202,11 +202,11 @@ module Sinatra
       
       ### page accessibility (private pages)
       def page_levels
-        ["Public", "Authorized Users Only"]
+        {"public" => "Public", "private" => "Logged-in users only"}
       end
 
       def accessible?(page)
-        authorized? || page.metadata["accessibility"] != "Authorized Users Only"
+        authorized? || page.metadata["accessibility"] != "private"
       end
 
       def enforce_page_access!(page)

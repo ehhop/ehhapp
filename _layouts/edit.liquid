@@ -85,17 +85,17 @@
 
     {% if is_editor %}
     <div data-role="fieldcontain">
-      <label for="{{ page.name | escape }}-accessibility">Accessibility</label>
+      <label for="{{ page.name | escape }}-accessibility">Visible to</label>
       <select name="accessibility" id="{{ page.name | escape }}-accessibility" class="select-editor">
         {% for lvl in page_levels %}
-        <option value="{{ lvl }}"{% if page.metadata.accessibility == lvl %}selected{% endif %}>{{ lvl }}</option>
+        <option value="{{ lvl[0] }}"{% if page.metadata.accessibility == lvl[0] %}selected{% endif %}>{{ lvl[1] }}</option>
         {% endfor %}
       </select>
     </div>
     {% else %}
     <div class="metadata">
       <p class="accessibility">
-        <b>Accessibility: </b>{% if page.metadata.accessibility %}{{ page.metadata.accessibility }}{% else %}{{ page_levels | first }}{% endif %}
+        <b>Visible to: </b>{% if page.metadata.accessibility %}{{ page_levels[page.metadata.accessibility] }}{% else %}{{ page_levels.public }}{% endif %}
       </p>
     </div>
     {% endif %}
