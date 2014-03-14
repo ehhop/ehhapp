@@ -149,7 +149,7 @@ module GitWiki
           :templates => templates,
           :uploads => uploads,
           :editors => editors,
-          :page_levels => page_levels,
+          :page_levels => Sinatra::EmailAuth::PAGE_LEVELS,
           :title => title(page_hash),
           :touch_icon => settings.config["touch_icon"],
           :footer_links => settings.config["footer_links"],

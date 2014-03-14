@@ -32,6 +32,9 @@ module Sinatra
     # This is a variable that will be linked to the PStore to contain lockouts, key issue times, etc.
     # See Helpers#auth_store for the initialization code
     self.store = nil
+    
+    # Levels of visibility that can be set for each page.
+    PAGE_LEVELS = {"public" => "Public", "private" => "Logged-in users only"}
 
     module Helpers
       
@@ -80,6 +83,7 @@ module Sinatra
         !!username.match(auth_settings["username_regexp"] || /^[\w_-]+(\.[\w_-]+)*$/)
       end
 
+      # Is the current viewer logged in?  If not, redirect to the login screen
       def authorize!(cancel_path = nil)
         unless authorized? or !auth_enabled?
           session[:auth_next_for] = request.path_info
@@ -200,20 +204,20 @@ module Sinatra
         }.merge(and_these)
       end
       
-      ### page accessibility (private pages)
-      def page_levels
-        {"public" => "Public", "private" => "Logged-in users only"}
-      end
-
+      ### Helpers for page visibility
+      ### Pages can be private, which means only logged in users can view them.
+      
+      # Does the current viewer have the ability to see the page?
       def accessible?(page)
         authorized? || page.metadata["accessibility"] != "private"
       end
 
+      # If the current viewer cannot view the page, redirect to the login screen.
       def enforce_page_access!(page)
         unless accessible?(page) or !auth_enabled?
           session[:auth_next_for] = request.path_info
           session[:auth_reason] = "You must login to view this page."
-          session[:auth_cancel] = request.path_info
+          session[:auth_cancel] = nil
           redirect "/login"
         end
       end
@@ -245,7 +249,7 @@ module Sinatra
 
       app.post "/login" do
         auth_for = nil
-        cancel = session[:auth_cancel] || "/"
+        cancel = session[:auth_cancel]
         error = nil
         sent = false
         
