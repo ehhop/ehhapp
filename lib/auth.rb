@@ -50,7 +50,9 @@ module Sinatra
       end
       
       def auth_store
-        return EmailAuth.store if EmailAuth.store
+        store = EmailAuth.store
+        return store if store && store[:lockouts] && store[:keys_issued] && store[:failures]
+        # Initialize the store if it hasn't been opened already or it is invalid
         store = EmailAuth.store = PStore.new(File.expand_path(auth_settings["pstore_filename"], Dir.tmpdir))
         store.transaction do
           store[:lockouts] ||= {}
