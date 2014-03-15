@@ -62,7 +62,7 @@ module Sinatra
       end
       
       def auth_store_valid?
-        !!(EmailAuth.store.transaction {|s| s[:lockouts] && s[:keys_issued] && s[:failures] })
+        !!(EmailAuth.store.transaction {|as| as[:lockouts] && as[:keys_issued] && as[:failures] })
       end
       
       def username
@@ -101,13 +101,13 @@ module Sinatra
       
       def issue_key(username)
         # Check that a key wasn't issued too recently in the past.
-        auth_store.transaction do
-          key_issued = auth_store[:keys_issued][username]
+        auth_store.transaction do |astore|
+          key_issued = astore[:keys_issued][username]
           return false if key_issued && key_issued > (Time.now - auth_settings["key_issue_interval"])
         
           # Issue the key.  It is a random 6-digit number with no leading 0's.
           session[:key] = (SecureRandom.random_number * 900000 + 100000).round.to_s
-          auth_store[:keys_issued][username] = Time.now
+          astore[:keys_issued][username] = Time.now
         end
         session[:username] = username
         session[:authorized] = false
@@ -145,16 +145,16 @@ module Sinatra
       
       # Check that the user is not in within a lockout window (i.e., currently locked out)
       def locked_out?(username = nil)
-        auth_store.transaction do
-          locked_out_until = auth_store[:lockouts][username || session[:username]]
+        auth_store.transaction do |astore|
+          locked_out_until = astore[:lockouts][username || session[:username]]
           !!(locked_out_until && locked_out_until > Time.now)
         end
       end
       
       # Check that the key issued for a user has not expired
       def key_expired?(username = nil)
-        auth_store.transaction do
-          key_issued = auth_store[:keys_issued][username || session[:username]]
+        auth_store.transaction do |astore|
+          key_issued = astore[:keys_issued][username || session[:username]]
           !key_issued || Time.now - key_issued > auth_settings["key_expiration_interval"]
         end
       end
@@ -164,20 +164,20 @@ module Sinatra
         return "session_problem" if !username
         return "locked_out" if locked_out?(username)
         return "key_expired" if key_expired?(username)
-        auth_store.transaction do
+        auth_store.transaction do |astore|
           if key != session[:key] # Check if the key matches the one stored in the session.
             # Shift the time into the failures array for that user
-            (auth_store[:failures][username] ||= []).unshift(Time.now)
+            (astore[:failures][username] ||= []).unshift(Time.now)
             # Trim the failures array to max_failures elements
-            auth_store[:failures][username] = auth_store[:failures][username].first(auth_settings["max_failures"])
+            astore[:failures][username] = astore[:failures][username].first(auth_settings["max_failures"])
             # If the last is within max_failures_interval of now, initiate a lockout
-            if auth_store[:failures][username].last > Time.now - auth_settings["max_failures_interval"]
-              auth_store[:lockouts][username] = Time.now + auth_settings["lockout_interval"]
+            if astore[:failures][username].last > Time.now - auth_settings["max_failures_interval"]
+              astore[:lockouts][username] = Time.now + auth_settings["lockout_interval"]
             end
             "invalid_key"
           else
             # Clear the key issued time so the user can logout and re-issue a key right away
-            auth_store[:keys_issued][username] = nil
+            astore[:keys_issued][username] = nil
             false
           end
         end
