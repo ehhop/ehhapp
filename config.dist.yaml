@@ -10,7 +10,7 @@ repo: ./ehhapp-data
 # Authentication settings go in this big block
 auth:
     # Should we use authentication before pages can be edited?
-    enabled: no
+    enabled: yes
 
     # What is the common domain for the email addresses that will be
     # used to authenticate users?
@@ -71,6 +71,8 @@ auth:
 default_title: EHHapp
 
 touch_icon: /images/ehhapp.png
+
+google_analytics: TRACKINGID
 
 footer_links:
     - {icon: "info", title: "FAQ", page: "FAQ"}

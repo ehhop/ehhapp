@@ -153,6 +153,7 @@ module GitWiki
           :title => title(page_hash),
           :touch_icon => settings.config["touch_icon"],
           :footer_links => settings.config["footer_links"],
+          :google_analytics => settings.config["google_analytics"],
           :csrf_token => Rack::Csrf.csrf_token(env)
         }.merge(and_these)
       end
