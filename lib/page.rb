@@ -318,8 +318,7 @@ module GitWiki
     
     # Turns an author's username into a Grit::Actor for the purposes of committing
     def actor(author)
-      author_email = self.class.email_domain && "#{author}@#{self.class.email_domain}"
-      author_email ? Grit::Actor.new(author, author_email) : nil
+      author ? Grit::Actor.new(author, author) : nil
     end
 
     # Creates a standardized commit message for each kind of action

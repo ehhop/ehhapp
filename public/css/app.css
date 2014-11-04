@@ -304,13 +304,8 @@
   display: table-row;
 }
 
-#email.ui-input-text {
-  width: 96%;
-  display: table-cell;
-}
-
-.domain {
-  display: table-cell;
+.login-form .ui-select {
+  left: 11%;
 }
 
 .redirect-list .ui-btn-text a.ui-link-inherit {

@@ -19,15 +19,17 @@
   {% if error %}
   <div class="ui-body ui-body-e">
     {% case error %}
+    {% when 'implausible_domain' %}
+      Sorry, that wasn't a plausible domain!
     {% when 'implausible_username' %}
-      Sorry, that wasn't a plausible <strong>@{{ domain | escape }}</strong> username!
+      Sorry, that wasn't a plausible username!
     {% when 'key_expired' %}
-      The key we sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }} has expired.<br/>
+      The key we sent to <strong>{{ sent_to | escape }}</strong> has expired.<br/>
       Please use the form below to send a new one.
     {% when 'too_soon' %}
       You can't send another key to that email address yet.<br/>Please wait a few minutes and try again.
     {% when 'locked_out' %}
-      You have entered too many incorrect codes for {{ sent_to | escape }}@{{ domain | escape }}.
+      You have entered too many incorrect codes for {{ sent_to | escape }}.
       <br/>Please wait a few minutes and then try sending another email.
     {% when 'session_problem' %}
       Something happened on our servers and we couldn't log you in.<br/>Sorry about that, please try again!
@@ -35,7 +37,7 @@
       That six-digit code was incorrect.
       Caution, you only get <strong>{{ max_failures }}</strong> total attempts to enter a correct code!
     {% when 'send_different' %}
-      A code has already been sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }};
+      A code has already been sent to <strong>{{ sent_to | escape }}</strong>;
       you may try a different address below.
     {% else %}
       You are already logged in as <strong>{{ error }}</strong>.
@@ -46,7 +48,7 @@
   {% if sent %}
   
   <p>
-    A six-digit code was sent to <strong>{{ sent_to | escape }}</strong>@{{ domain | escape }}.
+    A six-digit code was sent to <strong>{{ sent_to | escape }}</strong>.
     Please check your email and enter the code here.  Be careful, because you only have
     <strong>{{ max_failures }}</strong> attempts to enter it correctly!
   </p>
@@ -69,21 +71,23 @@
     {% else %}
       You must login to submit changes.
     {% endif %}
-    Please provide your
-    <strong>@{{ domain | escape }}</strong> address, and we will email you a six-digit
+    Please provide your e-mail address, and we will email you a six-digit
     code to authorize you to this device or browser.
   </p>
   <p>
     Once you authorize this device, you shouldn't have to re-enter any codes
     as long as you access the EHHapp at least once every couple months.
   </p>
-  <div class="display-table">
-    <div class="display-table-row">
-      <label for="email" class="ui-hidden-accessible">Email</label>
-      <input type="text" name="email" id="email" value="" placeholder="first.last"/>
-      <div class="domain">@{{ domain | escape }}</div>
+  <fieldset class="ui-grid-a" data-role="fieldcontain">
+    <div class="ui-block-a"><label for="username" style="vertical-align: middle;">Email</label><input type="text" name="username" id="username" value="" placeholder="first.last"/></div>
+    <div class="ui-block-b">
+      <select name="domain" id="domain">
+        {% for domain in domains %}
+        <option value="{{ domain }}">@{{ domain | escape }}</option>
+        {% endfor %}
+      </select>
     </div>
-  </div>
+  </fieldset>
   <fieldset class="ui-grid-a">
     <div class="ui-block-a"><a class="cancel" href="{{ auth_cancel | escape }}" data-role="button">Cancel</a></div>
     <div class="ui-block-b"><input type="submit" data-theme="e" value="Send code"/></div>

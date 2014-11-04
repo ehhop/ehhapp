@@ -10,16 +10,19 @@ repo: ./ehhapp-data
 # Authentication settings go in this big block
 auth:
     # Should we use authentication before pages can be edited?
-    enabled: yes
+    enabled: no
 
     # What is the common domain for the email addresses that will be
     # used to authenticate users?
-    mail_domain: mssm.edu
+    # NOTE: in converting from the old username based format, the first mail domain is used
+    mail_domain: 
+    - mssm.edu
+    - icahn.mssm.edu
 
     # Where do auth emails come from?
-    mail_from: example@example.com
+    mail_from: example@example.edu
     # Where will they bounce to (when people enter in invalid addresses)?
-    mail_bounce: example@example.com
+    mail_bounce: example@example.edu
     # Usernames need to match this regexp.  One detail is that usernames also need to be valid as
     # part of a git reference: https://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
     username_regexp: !ruby/regexp /^[\w_-]+(\.[\w_-]+)*$/

@@ -142,7 +142,7 @@ module GitWiki
         page_hash = page.to_hash
         {
           :just_auth => @just_auth, 
-          :username => @username,
+          :email => @email,
           :page => page_hash,
           :nocache => false,
           :is_editor => @is_editor,
@@ -162,7 +162,7 @@ module GitWiki
       content_type "text/html", :charset => "utf-8"
       @just_auth = !!session[:just_auth]
       session[:just_auth] = false
-      @username = username
+      @email = email
       @is_editor = is_editor?
     end
 
@@ -216,7 +216,7 @@ module GitWiki
 
     get "/:page/edit" do
       authorize! "/#{params[:page]}"
-      @page = Page.find_or_create(params[:page], username)
+      @page = Page.find_or_create(params[:page], email)
 
       ### Generate initial commits to display
       # potential for amortization (request in blocks) to be implemented
@@ -237,10 +237,10 @@ module GitWiki
           :mdown_examples => GitWiki.mdown_examples, :commit_list => commit_list)
     end
     
-    get "/:page/approve/:username" do
+    get "/:page/approve/:email" do
       authorize! "/#{params[:page]}"
       redirect "/#{params[:page]}" unless forking_enabled? && @is_editor
-      @page = Page.find_and_merge(params[:page], params[:username])
+      @page = Page.find_and_merge(params[:page], params[:email])
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true, 
           :mdown_examples => GitWiki.mdown_examples, :approving => true)
     end
@@ -256,17 +256,17 @@ module GitWiki
       raise UploadNotFound.new(filename)
     end
 
-    get "/:page/?:username?" do
-      if params[:username]
+    get "/:page/?:email?" do
+      if params[:email]
         # An editor is looking at somebody else's changes to a page
-        authorize! "/#{params[:page]}/#{params[:username]}"
+        authorize! "/#{params[:page]}/#{params[:email]}"
         redirect "/#{params[:page]}" unless @is_editor && forking_enabled?
         for_approval = true
-        @page = Page.find_and_merge(params[:page], params[:username])
+        @page = Page.find_and_merge(params[:page], params[:email])
       else
         # Get the user's unapproved version of the page, if logged in and it exists.
         # Otherwise, get the current approved version from the master branch
-        @page = Page.find(params[:page], forking_enabled? && username)
+        @page = Page.find(params[:page], forking_enabled? && email)
         enforce_page_access! @page
       end
       template = @page.metadata["template"]
@@ -285,7 +285,7 @@ module GitWiki
     post "/:page" do
       authorize! "/#{params[:page]}"
       
-      @page = Page.find_or_create(params[:page], username)
+      @page = Page.find_or_create(params[:page], email)
       new_metadata = @page.metadata.clone
 
       # Save and rename uploaded images and rewrite temporary href's in the body with the permanent ones
@@ -293,13 +293,13 @@ module GitWiki
 
       if @is_editor || !auth_enabled?
         Page::METADATA_FIELDS.each { |k, default| new_metadata[k] = params[k.to_sym] || default }
-        @page.update_content(username, params[:body], new_metadata, params[:approving])
-        notify_branch_author(@page, params[:approving], username) if params[:approving]
+        @page.update_content(email, params[:body], new_metadata, params[:approving])
+        notify_branch_author(@page, params[:approving], email) if params[:approving]
       elsif forking_enabled?
         # If the user is not an editor, the commit is made to a topic branch
         Page::NON_EDITOR_FIELDS.each { |k| new_metadata[k] = params[k.to_sym] if params[k.to_sym] }
-        @page.branch_content(username, params[:body], new_metadata)
-        notify_page_owner(@page, username)
+        @page.branch_content(email, params[:body], new_metadata)
+        notify_page_owner(@page, email)
       else
         error = {"name" => @page.name, "type" => "NotAnEditor"}
         liquid :error, :locals => locals(empty_page, :header => header(empty_page), :error => error)

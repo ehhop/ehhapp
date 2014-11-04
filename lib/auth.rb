@@ -65,12 +65,12 @@ module Sinatra
         !!(EmailAuth.store.transaction {|as| as[:lockouts] && as[:keys_issued] && as[:failures] })
       end
       
-      def username
-        session[:authorized] && session[:username]
+      def email
+        session[:authorized] && session[:email]
       end
       
       def authorized?
-        !!username
+        !!email
       end
       
       def editors
@@ -78,7 +78,7 @@ module Sinatra
       end
       
       def is_editor?
-        !!username && editors.include?(username)
+        !!email && editors.include?(email)
       end
       
       def forking_enabled?
@@ -87,6 +87,26 @@ module Sinatra
       
       def plausible_username?(username)
         !!username.match(auth_settings["username_regexp"] || /^[\w_-]+(\.[\w_-]+)*$/)
+      end
+
+      def plausible_domain?(domain)
+        auth_settings["mail_domain"].include? domain
+      end
+
+      def plausible_email?(email)
+        username, domain = email.split('@', 2)
+        plausible_username?(username) and plausible_domain?(domain)
+      end
+
+      # For legacy purposes (before @example.com was required)
+      def emailify(something)
+        return something if something.nil?
+        if plausible_email?(something) 
+          email = something
+        else
+          email = something + '@' + auth_settings["mail_domain"].first
+        end
+        email
       end
 
       # Is the current viewer logged in?  If not, redirect to the login screen
@@ -99,22 +119,22 @@ module Sinatra
         end
       end
       
-      def issue_key(username)
+      def issue_key(email)
         # Check that a key wasn't issued too recently in the past.
         auth_store.transaction do |astore|
-          key_issued = astore[:keys_issued][username]
+          key_issued = astore[:keys_issued][email]
           return false if key_issued && key_issued > (Time.now - auth_settings["key_issue_interval"])
         
           # Issue the key.  It is a random 6-digit number with no leading 0's.
           session[:key] = (SecureRandom.random_number * 900000 + 100000).round.to_s
-          astore[:keys_issued][username] = Time.now
+          astore[:keys_issued][email] = Time.now
         end
-        session[:username] = username
+        session[:email] = email
         session[:authorized] = false
         
         mail = Mail.new
         mail.from = auth_settings["mail_from"]
-        mail.to = "#{username}@#{auth_settings["mail_domain"]}"
+        mail.to = email
         mail.subject = "#{default_title} Authentication Request"
         mail.body = sprintf(auth_settings["mail_body"], session[:key])
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
@@ -126,7 +146,8 @@ module Sinatra
         version_url = url("/#{page.name}/#{author}")
         mail = Mail.new
         mail.from = auth_settings["mail_from"]
-        mail.to = "#{page.metadata["owner"] || editors.first}@#{auth_settings["mail_domain"]}"
+        owner_email = emailify(page.metadata["owner"])
+        mail.to = "#{owner_email || editors.first}"
         mail.subject = "#{default_title} changes submitted by #{author} for #{page.name}"
         mail.body = sprintf(settings.config["fork_notify_message"], author, version_url)
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
@@ -136,7 +157,7 @@ module Sinatra
       def notify_branch_author(page, author, editor)
         mail = Mail.new
         mail.from = auth_settings["mail_from"]
-        mail.to = "#{author}@#{auth_settings["mail_domain"]}"
+        mail.to = emailify(author)
         mail.subject = "#{default_title} changes accepted by #{editor} for #{page.name}"
         mail.body = sprintf(settings.config["fork_accepted_message"], editor, url("/#{page.name}"))
         mail.return_path = auth_settings["mail_bounce"]   # Control where bounces go
@@ -144,40 +165,40 @@ module Sinatra
       end
       
       # Check that the user is not in within a lockout window (i.e., currently locked out)
-      def locked_out?(username = nil)
+      def locked_out?(email = nil)
         auth_store.transaction do |astore|
-          locked_out_until = astore[:lockouts][username || session[:username]]
+          locked_out_until = astore[:lockouts][email || session[:email]]
           !!(locked_out_until && locked_out_until > Time.now)
         end
       end
       
       # Check that the key issued for a user has not expired
-      def key_expired?(username = nil)
+      def key_expired?(email = nil)
         auth_store.transaction do |astore|
-          key_issued = astore[:keys_issued][username || session[:username]]
+          key_issued = astore[:keys_issued][email || session[:email]]
           !key_issued || Time.now - key_issued > auth_settings["key_expiration_interval"]
         end
       end
       
-      def invalid_key?(key, username = nil)
-        username ||= session[:username]
-        return "session_problem" if !username
-        return "locked_out" if locked_out?(username)
-        return "key_expired" if key_expired?(username)
+      def invalid_key?(key, email = nil)
+        email ||= session[:email]
+        return "session_problem" if !email
+        return "locked_out" if locked_out?(email)
+        return "key_expired" if key_expired?(email)
         auth_store.transaction do |astore|
           if key != session[:key] # Check if the key matches the one stored in the session.
             # Shift the time into the failures array for that user
-            (astore[:failures][username] ||= []).unshift(Time.now)
+            (astore[:failures][email] ||= []).unshift(Time.now)
             # Trim the failures array to max_failures elements
-            astore[:failures][username] = astore[:failures][username].first(auth_settings["max_failures"])
+            astore[:failures][email] = astore[:failures][email].first(auth_settings["max_failures"])
             # If the last is within max_failures_interval of now, initiate a lockout
-            if astore[:failures][username].last > Time.now - auth_settings["max_failures_interval"]
-              astore[:lockouts][username] = Time.now + auth_settings["lockout_interval"]
+            if astore[:failures][email].last > Time.now - auth_settings["max_failures_interval"]
+              astore[:lockouts][email] = Time.now + auth_settings["lockout_interval"]
             end
             "invalid_key"
           else
             # Clear the key issued time so the user can logout and re-issue a key right away
-            astore[:keys_issued][username] = nil
+            astore[:keys_issued][email] = nil
             false
           end
         end
@@ -190,7 +211,7 @@ module Sinatra
       
       def logout!
         session[:authorized] = false
-        session[:username] = nil
+        session[:email] = nil
         session[:just_auth] = true
       end
       
@@ -201,9 +222,9 @@ module Sinatra
           :auth_enabled => auth_enabled?,
           :auth_reason => session[:auth_reason],
           :nocache => true,
-          :domain => auth_settings["mail_domain"],
+          :domains => auth_settings["mail_domain"],
           :max_failures => auth_settings["max_failures"],
-          :sent_to => session[:username],
+          :sent_to => session[:email],
           :just_auth => session[:just_auth],
           :title => "#{default_title} - Login",
           :footer_links => footer_links
@@ -244,13 +265,13 @@ module Sinatra
         cancel = session[:auth_cancel] || "/"
         error = params[:error]
         sent = false
-        if !error && session[:key] && session[:username] && !authorized?
+        if !error && session[:key] && session[:email] && !authorized?
           # We've sent an email with the key, display a numeric input to enter it
           if locked_out? then error = "locked_out"
           elsif key_expired? then error = "key_expired"; end
           sent = !error
         else
-          error ||= username   # Warn if we are already logged in
+          error ||= email   # Warn if we are already logged in
           auth_for = session[:auth_next_for] || "/"
         end
         liquid :login, :locals => auth_locals(:error => error, :auth_for => auth_for, :auth_cancel => cancel, :sent => sent)
@@ -271,11 +292,13 @@ module Sinatra
           else
             # We are trying to send a key to an email address
             auth_for = session[:auth_for] = params[:auth_for]
-            error = "implausible_username" unless plausible_username?(params[:email])
-            error = "locked_out" if locked_out?(params[:email])
+            error = "implausible_username" unless plausible_username?(params[:username])
+            error = "implausible_domain" unless plausible_domain?(params[:domain])
+            email = params[:username] +'@'+ params[:domain]
+            error = "locked_out" if locked_out?(email)
             unless error
               # Try to issue; if we can't, it's because a key was issued too recently
-              error = "too_soon" unless issue_key(params[:email])
+              error = "too_soon" unless issue_key(email)
               sent = !error
             end
           end

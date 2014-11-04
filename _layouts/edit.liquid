@@ -8,8 +8,8 @@
   <h1>{% if page.new %}Creating{% elsif approving %}Merging{% else %}Editing{% endif %} /{{ page.name }}</h1>
   
   {% if just_auth %}
-    {% if username and username != '' %}
-  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ username }}</div>
+    {% if email and email != '' %}
+  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ email }}</div>
     {% else %}
   <div class="ui-body ui-bar-e auth-flash">You have been logged out</div>
     {% endif %}
