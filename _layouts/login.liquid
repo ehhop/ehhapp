@@ -80,7 +80,7 @@
   </p>
   <fieldset class="ui-grid-a" data-role="fieldcontain">
     <div class="ui-block-a"><label for="username">Email</label><input type="text" name="username" id="username" value="" placeholder="first.last"/></div>
-    <div class="ui-block-b" class="domain-cont">
+    <div class="ui-block-b domain-cont">
       <select name="domain" id="domain">
         {% for domain in domains %}
         <option value="{{ domain }}">@{{ domain | escape }}</option>
