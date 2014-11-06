@@ -117,6 +117,9 @@ module GitWiki
     end
     private_class_method :find_blob
     
+    # You can define filters that are run on a Page's metadata and body after instantiating
+    # from a Grit::Blob.  They can perform additional cleaning or modification.
+    # See Page#extract_front_matter below.  GitWiki uses this to clean metadata in legacy formats.
     def self.add_extract_filter(filter_name, &filter)
       @extract_filters[filter_name] = filter
     end
@@ -253,6 +256,8 @@ module GitWiki
     # kind of like YAML front matter in Jekyll.
     # This function extracts the YAML front matter into a [metadata, page_content] pair.
     # If there is no YAML front matter, we supply the default metadata values.
+    # We also pass the metadata and body through previously defined extract_filters
+    #   (see Page.add_extract_filter above) which can clean or modify their contents.
     private
     def extract_front_matter(from = nil)
       from ||= content
