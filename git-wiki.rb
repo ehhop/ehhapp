@@ -67,7 +67,7 @@ module GitWiki
     register Sinatra::EmailAuth
     use Rack::Csrf, :raise => true, :skip => ['POST:/.*/history', 'POST:/login']
     set :config, GitWiki.config
-    
+        
     # Allow templates in multiple folders.  The ones in _layouts are special and
     # can't be set as a template for a Page.  The ones in templates *can* be set as
     # a template for a Page by the user.
@@ -165,6 +165,13 @@ module GitWiki
       session[:just_auth] = false
       @email = email
       @is_editor = is_editor?
+      
+      # A shim that ensures that pages with old metadata lacking domains has those fields emailified
+      Page.add_extract_filter(:emailify_owner_author) do |metadata, body|
+        metadata['owner'] = emailify metadata['owner']
+        metadata['author'] = emailify metadata['author']
+        [metadata, body]
+      end
     end
 
     get "/" do

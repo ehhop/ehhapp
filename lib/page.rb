@@ -29,6 +29,8 @@ module GitWiki
       "conflicts" => false
     }
     
+    @extract_filters = {}
+    
     def self.valid_name?(name)
       !!(name =~ /^[\w-]+$/)
     end
@@ -96,10 +98,6 @@ module GitWiki
       GitWiki.const_get(name.to_classname)
     end
     
-    def self.email_domain
-      GitWiki.config["auth"] && GitWiki.config["auth"]["mail_domain"]
-    end
-    
     def self.create_blob_for(page_name, data = "")
       # Note that Grit::Blob.create does not save anything to the repo
       # The blob is "unbaked" and only exists within memory
@@ -118,6 +116,15 @@ module GitWiki
       [blob, on_branch]
     end
     private_class_method :find_blob
+    
+    def self.add_extract_filter(filter_name, &filter)
+      @extract_filters[filter_name] = filter
+    end
+    class << self; attr_reader :extract_filters; end
+
+    # =================================================
+    # = Now we define the instance methods for a Page =
+    # =================================================
 
     attr_reader :metadata, :body, :conflicts
     
@@ -250,10 +257,14 @@ module GitWiki
     def extract_front_matter(from = nil)
       from ||= content
       if from =~ /\A(---[ \t]*\n.*?\n?)^(---[ \t]*$\n?)/m
-        [YAML.load($1), $']
+        metadata, body = [YAML.load($1), $']
       else
-        [METADATA_FIELDS.clone, from]
+        metadata, body = [METADATA_FIELDS.clone, from]
       end
+      self.class.extract_filters.each do |key, filter|
+        metadata, body = filter.call(metadata, body)
+      end
+      [metadata, body]
     end
     
     # Package metadata and body into one string of page content, ready to be committed.

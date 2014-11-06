@@ -5,6 +5,7 @@ require 'mail'
 require 'tempfile'
 require 'pstore'
 require 'fileutils'
+require_relative 'page'
 
 # A quick monkey-patch to always try sending mails first via local SMTP and then sendmail.
 module Mail
@@ -74,7 +75,8 @@ module Sinatra
       end
       
       def editors
-        auth_settings["editors"] or raise "You must specify some editors of this wiki in config.yaml!"
+        raise "You must specify some editors of this wiki in config.yaml!" unless auth_settings["editors"]
+        auth_settings["editors"].map{|editor| emailify editor } # in case they were configured as usernames
       end
       
       def is_editor?
@@ -98,7 +100,8 @@ module Sinatra
         plausible_username?(username) and plausible_domain?(domain)
       end
 
-      # For legacy purposes (before @example.com was required)
+      # For legacy purposes (before @example.com was recorded for owners and authors)
+      # In this case, the first configured mail_domain is assumed for any username
       def emailify(something)
         return something if something.nil?
         if plausible_email?(something) 
@@ -250,9 +253,9 @@ module Sinatra
       end
       
     end  ### end module Helpers
+    
 
     # define routes for EmailAuth
-    
     def self.registered(app)
       app.helpers EmailAuth::Helpers
       
