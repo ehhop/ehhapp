@@ -79,8 +79,8 @@
     as long as you access the EHHapp at least once every couple months.
   </p>
   <fieldset class="ui-grid-a" data-role="fieldcontain">
-    <div class="ui-block-a"><label for="username" style="vertical-align: middle;">Email</label><input type="text" name="username" id="username" value="" placeholder="first.last"/></div>
-    <div class="ui-block-b">
+    <div class="ui-block-a"><label for="username">Email</label><input type="text" name="username" id="username" value="" placeholder="first.last"/></div>
+    <div class="ui-block-b" class="domain-cont">
       <select name="domain" id="domain">
         {% for domain in domains %}
         <option value="{{ domain }}">@{{ domain | escape }}</option>
