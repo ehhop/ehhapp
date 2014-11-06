@@ -157,7 +157,8 @@ module GitWiki
           :csrf_token => Rack::Csrf.csrf_token(env)
         }.merge(and_these)
       end
-    end
+      
+    end  ### helpers
 
     before do
       content_type "text/html", :charset => "utf-8"
