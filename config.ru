@@ -1,4 +1,4 @@
 #!/usr/bin/env rackup
 require File.dirname(__FILE__) + "/git-wiki"
 
-run GitWiki.new(File.dirname(__FILE__) + "/config.dist.yaml", ".md", "index")
+run GitWiki.new(File.dirname(__FILE__) + "/config.yaml", ".md", "index")
