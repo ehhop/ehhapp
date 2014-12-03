@@ -28,7 +28,6 @@ module GitWiki
     self.homepage   = homepage
     self.extension  = extension
     self.config.deep_merge!(YAML::load(File.open(config))) if File.file?(config)
-    puts self.config
     self.repository = Grit::Repo.new(self.config["repo"])
     self.mdown_examples = self.config["mdown_examples"].map do |ex|
       { 
