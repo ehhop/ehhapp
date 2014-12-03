@@ -28,6 +28,8 @@ required:
 It is usually simplest to install the `bundler` gem and then within your checkout's directory,
 run `bundle install` to install all required gems.
 
+Create a local config.yaml file. You can use this file to overload default options in config.dist.yaml.
+
 Then, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
 and point your browser at <http://0.0.0.0:4567/>.
 
