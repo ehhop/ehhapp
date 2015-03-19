@@ -28,9 +28,15 @@ required:
 It is usually simplest to install the `bundler` gem and then within your checkout's directory,
 run `bundle install` to install all required gems.
 
+<<<<<<< HEAD
 Then, note the sample configuration file: config.dist.yaml, copy it to a new file: config.yaml. This file can be customized as needed (e.g. toggle authorization on and off).
 
 Finally, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
+=======
+Create a local config.yaml file. You can use this file to overload default options in config.dist.yaml.
+
+Then, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
+>>>>>>> 309f0cbd3ff85696dafa7082cc927a04bc0ca9c3
 and point your browser at <http://0.0.0.0:4567/>.
 
 Data will be stored in a git repository in the ehhapp-data folder.
