@@ -31,7 +31,7 @@ run `bundle install` to install all required gems.
 Then, note the sample configuration file: config.dist.yaml, copy it to a new file: config.yaml. This file can be customized as needed (e.g. toggle authorization on and off).
 
 Finally, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
-=======
+
 Create a local config.yaml file. You can use this file to overload default options in config.dist.yaml.
 
 Then, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
