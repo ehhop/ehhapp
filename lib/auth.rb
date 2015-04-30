@@ -297,7 +297,7 @@ module Sinatra
             auth_for = session[:auth_for] = params[:auth_for]
             error = "implausible_username" unless plausible_username?(params[:username])
             error = "implausible_domain" unless plausible_domain?(params[:domain])
-            email = params[:username] +'@'+ params[:domain]
+            email = params[:username].downcase() +'@'+ params[:domain].downcase()
             error = "locked_out" if locked_out?(email)
             unless error
               # Try to issue; if we can't, it's because a key was issued too recently
