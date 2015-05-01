@@ -333,6 +333,17 @@
   padding-top: 30px;
 }
 
+table {
+  border: 1px;
+  border-style: solid;
+  border-collapse: collapse;
+}
+
+td, th {
+  border: 1px solid black;
+}
+
+
 /* CSS optimized for wider screens (tablets, desktop screens) */
 
 @media (min-width: 450px) {
