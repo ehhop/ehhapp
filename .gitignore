@@ -1,7 +1,16 @@
+# System files
 *.log
 *.swp
+
+# Configuration
 config.yaml
+
+# Database - a git repo
 ehhapp-data
+tech-docs
+
 *~
+
+# Uploaded assets
 public/uploads/*
 !public/uploads/.emptyfile
