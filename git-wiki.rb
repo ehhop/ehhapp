@@ -182,8 +182,11 @@ module GitWiki
     # NOTE: this route is a holdover from git-wiki and really isn't being used for anything, yet.
     # We could use it to list all pages and their outstanding revisions, though.
     get "/pages" do
-      @pages = Page.find_all(&:metadata_hash)
-      liquid :list, :locals => {:pages => @pages, :page => {"name" => "pages"}}
+      @listpages = Page.find_all(&:metadata_hash)
+      # @pages = {:dog => "okay"}
+      for_approval = false
+      liquid :list, :layout => false, :locals => {:pages => @listpages, :page => {"name" => "pages"}}
+      # @listpages.inspect
     end
 
     post "/:page/history" do
@@ -315,7 +318,8 @@ module GitWiki
       end
       
       # Run the other route (#call instead of #redirect avoids any caching)
-      call env.merge("REQUEST_METHOD"=>"GET", "PATH_INFO" => "/#{@page}")
+      call env.merge("REQUEST_METHOD"=>"GET", "PATH_INFO" => "/#{@page}") 
     end
   end
 end
+   

@@ -6,7 +6,6 @@ free-clinic run by medical students.
 EHHapp
 ======
 
-
 **A mobile-optimized wiki built on [git-wiki][].**
 
 The EHHapp is a user editable version of the original [EHHOP mobile website][] (sometimes

@@ -1,12 +1,13 @@
 <div data-role="content">
 
 <h1>All pages</h1>
+{{ pages }}
 {% if pages == empty %}
   <p>No pages found.</p>
 {% else %}
 <ul id="list">
   {% for page in pages %}
-  <li><a href="/{{ page.name }}">{{ page.name }}</a></li>
+		<li><a href="/{{ page.name }}">{{ page.name }} {{ page.metadata.last_modified }}</a></li>
   {% endfor %}
 </ul>
 {% endif %}

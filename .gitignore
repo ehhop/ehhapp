@@ -14,3 +14,8 @@ tech-docs
 # Uploaded assets
 public/uploads/*
 !public/uploads/.emptyfile
+
+# Testing and Documentation
+/doc
+/spec
+.rspec
