@@ -1,3 +1,8 @@
+This fork is home to a development branch of EHHapp called "ehhop-tech"
+which is for the education and training of future Chairs of Information
+Technology working at the East Harlem Health Outreach Partnership - a
+free-clinic run by medical students.
+
 EHHapp
 ======
 
@@ -17,7 +22,7 @@ Install
 -------
 
 The EHHapp is a Ruby/Rack web application.  Ruby is preinstalled on most Macs and packaged for
-most Linuxes.  You should also install [Rubygems][gems].  The fellowing gems are 
+most Linuxes.  You should also install [Rubygems][gems].  The following gems are 
 required:
 
 - [Sinatra][]
@@ -44,7 +49,7 @@ For deployment, the EHHapp is comparable to most Rack apps and could be served w
 Nginx/Passenger or Nginx/Unicorn.
 
 [EHHOP mobile website]: http://ehhop0.appspot.com
-[EHHOP clinic]: http://icahn.mssm.edu/education/medical-education/east-harlem-health-outreach-partnership
+[EHHOP clinic]: http://icahn.mssm.edu/education/medical/clinical/ehhop
 [git-wiki]: https://github.com/sr/git-wiki
 [Sinatra]: http://www.sinatrarb.com
 [GitHub]: https://github.com/sr/git-wiki
