@@ -1,3 +1,5 @@
+A fork for educational purposes.
+
 EHHapp
 ======
 
