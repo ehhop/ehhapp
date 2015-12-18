@@ -1,8 +1,3 @@
-This fork is home to a development branch of EHHapp called "ehhop-tech"
-which is for the education and training of future Chairs of Information
-Technology working at the East Harlem Health Outreach Partnership - a
-free-clinic run by medical students.
-
 EHHapp
 ======
 
