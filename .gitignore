@@ -5,3 +5,5 @@ ehhapp-data
 *~
 public/uploads/*
 !public/uploads/.emptyfile
+tmp/
+.bundle/
