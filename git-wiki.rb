@@ -244,7 +244,7 @@ module GitWiki
       # end
       commit_list = nil if commit_list.empty?
       ###
-
+      @page.body.force_encoding("utf-8")
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
           :mdown_examples => GitWiki.mdown_examples, :commit_list => commit_list)
     end

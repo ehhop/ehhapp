@@ -19,3 +19,7 @@ public/uploads/*
 /doc
 /spec
 .rspec
+
+# Deployment System files
+tmp/
+.bundle/
