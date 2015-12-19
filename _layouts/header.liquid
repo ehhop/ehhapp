@@ -4,8 +4,8 @@
   {% elsif page.metadata.backlink and page.metadata.backlink != "" %}
   <a class="ui-btn-left" data-icon="back" href="/{{ page.metadata.backlink }}">Back</a>
   {% else %}
-    {% if username and username != '' %}
-  <a class="ui-btn-left" href="/logout">Logout <span class="username wide-only">{{ username }}</span></a>
+    {% if email and email != '' %}
+  <a class="ui-btn-left" href="/logout">Logout <span class="username wide-only">{{ email }}</span></a>
     {% else %}
   <a data-theme="b" class="ui-btn-left" href="/login">Login</a>
     {% endif %}
@@ -19,8 +19,8 @@
   {% endif %}
   
   {% if just_auth %}
-    {% if username and username != '' %}
-  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ username }}</div>
+    {% if email and email != '' %}
+  <div class="ui-body ui-bar-e auth-flash">Thanks for logging in, {{ email }}</div>
     {% else %}
   <div class="ui-body ui-bar-e auth-flash">You have been logged out</div>
     {% endif %}

@@ -1,4 +1,4 @@
-<div data-role="header"
+<div data-role="header" {% comment %}Lack of > here is intentional!{% endcomment %}
   {{ header }}
 </div>
 
@@ -36,6 +36,16 @@
     numbers, hyphens, and underscores.
   </p>
   <a href="/" data-role="button">Return home</a>
+</div>
+
+{% when "GitWiki::UploadNotFound" %}
+
+<h1>Upload not found</h1>
+<div id="#content">
+  <p class="one-button-message">
+    You have tried to access an uploaded file that does not exist.
+  </p>
+  <a href="#" data-role="button" data-rel="back">Go back</a>
 </div>
 
 {% when "NotAnEditor" %}

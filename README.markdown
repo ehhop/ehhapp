@@ -17,7 +17,7 @@ Install
 -------
 
 The EHHapp is a Ruby/Rack web application.  Ruby is preinstalled on most Macs and packaged for
-most Linuxes.  You should also install [Rubygems][gems].  The fellowing gems are 
+most Linuxes.  You should also install [Rubygems][gems].  The following gems are 
 required:
 
 - [Sinatra][]
@@ -28,7 +28,14 @@ required:
 It is usually simplest to install the `bundler` gem and then within your checkout's directory,
 run `bundle install` to install all required gems.
 
+Then, note the sample configuration file: config.dist.yaml, copy it to a new file: config.yaml. This file can be customized as needed (e.g. toggle authorization on and off).
+
+Finally, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
+
+Create a local config.yaml file. You can use this file to overload default options in config.dist.yaml.
+
 Then, run the EHHapp with `mkdir ehhapp-data && (cd ehhapp-data && git init) && rackup -p4567`
+
 and point your browser at <http://0.0.0.0:4567/>.
 
 Data will be stored in a git repository in the ehhapp-data folder.
@@ -37,7 +44,7 @@ For deployment, the EHHapp is comparable to most Rack apps and could be served w
 Nginx/Passenger or Nginx/Unicorn.
 
 [EHHOP mobile website]: http://ehhop0.appspot.com
-[EHHOP clinic]: http://icahn.mssm.edu/education/medical-education/east-harlem-health-outreach-partnership
+[EHHOP clinic]: http://icahn.mssm.edu/education/medical/clinical/ehhop
 [git-wiki]: https://github.com/sr/git-wiki
 [Sinatra]: http://www.sinatrarb.com
 [GitHub]: https://github.com/sr/git-wiki
