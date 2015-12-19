@@ -12,17 +12,21 @@ auth:
     # Should we use authentication before pages can be edited?
     enabled: yes
 
-    # What is the common domain for the email addresses that will be
+    # What are the allowed domains for the email addresses that will be
     # used to authenticate users?
-    mail_domain: mssm.edu
+    # NOTE: in any cases where just a username was recorded (legacy format), the first mail domain is assumed
+    #   see lib/auth.rb --> Sinatra::EmailAuth::Helpers#emailify
+    mail_domain: 
+    - mssm.edu
+    - icahn.mssm.edu
 
     # Where do auth emails come from?
-    mail_from: example@example.com
+    mail_from: example@example.edu
     # Where will they bounce to (when people enter in invalid addresses)?
-    mail_bounce: example@example.com
+    mail_bounce: example@example.edu
     # Usernames need to match this regexp.  One detail is that usernames also need to be valid as
     # part of a git reference: https://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
-    username_regexp: !ruby/regexp /^[\w_-]+(\.[\w_-]+)*$/
+    username_regexp: !ruby/regexp /^[\w_-`]+(\.[\w_-`]+)*$/
 
     # What to put in the email message
     mail_body: |
@@ -54,18 +58,22 @@ auth:
     # How long a lockout is, in seconds
     lockout_interval: 1800
 
-    # What usernames at the previously configured domain are allowed
-    # to edit all pages and approve changes?
+    # What email addresses are allowed to edit all pages and approve changes?
     # Users that are not editors will be able to submit changes, but not
     # approve them, or be designated as editors for a page.
     # The first user in this list is the default editor for all new pages.
     editors:
-    - example.name
+    - example.one@example.com
+    - example.two@example.com
     
     # Can non-editors save changes to topic branches?
     non_editor_forking: no
 
 default_title: EHHapp
+
+touch_icon: /images/ehhapp.png
+
+google_analytics: TRACKINGID
 
 footer_links:
     - {icon: "info", title: "FAQ", page: "FAQ"}

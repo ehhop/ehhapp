@@ -95,6 +95,21 @@
   margin-top: 30px;
 }
 
+.login-form .ui-select {
+  left: 11%;
+}
+
+.login-form .ui-field-contain label {
+  vertical-align: middle;
+  text-align: right;
+}
+
+/* some customization for narrow mobile displays */
+@media (max-width: 450px) {
+  .login-form label { display: none; }
+  .login-form .ui-select { left: 5%; }
+}
+
 /** EDITOR PAGES **/
 
 .ui-page.editor {
@@ -309,15 +324,6 @@
   display: table-row;
 }
 
-#email.ui-input-text {
-  width: 96%;
-  display: table-cell;
-}
-
-.domain {
-  display: table-cell;
-}
-
 .redirect-list .ui-btn-text a.ui-link-inherit {
   white-space: normal;
   line-height: normal;
@@ -331,6 +337,17 @@
 .assessment-form {
   padding-top: 30px;
 }
+
+table {
+  border: 1px;
+  border-style: solid;
+  border-collapse: collapse;
+}
+
+td, th {
+  border: 1px solid black;
+}
+
 
 /* CSS optimized for wider screens (tablets, desktop screens) */
 

@@ -12,7 +12,8 @@ module GitWiki
       'author' => nil,
       'last_modified' => nil,
       'owner' => nil,
-      'backlink' => nil
+      'backlink' => nil,
+      'accessibility' => 'Public'
     }
     
     # Which metadata is safe for non-editors to change?
@@ -27,6 +28,8 @@ module GitWiki
       "new" => true,
       "conflicts" => false
     }
+    
+    @extract_filters = {}
     
     def self.valid_name?(name)
       !!(name =~ /^[\w-]+$/)
@@ -95,10 +98,6 @@ module GitWiki
       GitWiki.const_get(name.to_classname)
     end
     
-    def self.email_domain
-      GitWiki.config["auth"] && GitWiki.config["auth"]["mail_domain"]
-    end
-    
     def self.create_blob_for(page_name, data = "")
       # Note that Grit::Blob.create does not save anything to the repo
       # The blob is "unbaked" and only exists within memory
@@ -117,6 +116,18 @@ module GitWiki
       [blob, on_branch]
     end
     private_class_method :find_blob
+    
+    # You can define filters that are run on a Page's metadata and body after instantiating
+    # from a Grit::Blob.  They can perform additional cleaning or modification.
+    # See Page#extract_front_matter below.  GitWiki uses this to clean metadata in legacy formats.
+    def self.add_extract_filter(filter_name, &filter)
+      @extract_filters[filter_name] = filter
+    end
+    class << self; attr_reader :extract_filters; end
+
+    # =================================================
+    # = Now we define the instance methods for a Page =
+    # =================================================
 
     attr_reader :metadata, :body, :conflicts
     
@@ -245,14 +256,20 @@ module GitWiki
     # kind of like YAML front matter in Jekyll.
     # This function extracts the YAML front matter into a [metadata, page_content] pair.
     # If there is no YAML front matter, we supply the default metadata values.
+    # We also pass the metadata and body through previously defined extract_filters
+    #   (see Page.add_extract_filter above) which can clean or modify their contents.
     private
     def extract_front_matter(from = nil)
       from ||= content
       if from =~ /\A(---[ \t]*\n.*?\n?)^(---[ \t]*$\n?)/m
-        [YAML.load($1), $']
+        metadata, body = [YAML.load($1), $']
       else
-        [METADATA_FIELDS.clone, from]
+        metadata, body = [METADATA_FIELDS.clone, from]
       end
+      self.class.extract_filters.each do |key, filter|
+        metadata, body = filter.call(metadata, body)
+      end
+      [metadata, body]
     end
     
     # Package metadata and body into one string of page content, ready to be committed.
@@ -262,6 +279,7 @@ module GitWiki
       "#{ new_metadata.to_yaml }--- \n#{ new_body }"
     end
 
+    # TODO: Test if this method works for the first commit in an empty repo
     # Commits new_content to the master branch without using the working directory
     def commit!(author, new_content)
       @on_branch = nil
@@ -269,19 +287,21 @@ module GitWiki
       index = repo.index
       index.read_tree("master")
       index.add(name + self.class.extension, new_content)
-      index.commit(commit_message(author), [repo.commit("master")], actor(author), nil, "master")
+      parents = [repo.commit("master")].compact
+      index.commit(commit_message(author), parents, actor(author), nil, "master")
       initialize(repo.tree/(@blob.name)) # Reinitialize from the committed blob
       # Since this changes the master branch, bring the working directory up to speed
       Dir.chdir(repo.working_dir) { repo.git.reset(:hard => true) }
     end
     
+    # TODO: Test if this method works for the first commit in an empty repo
     # Commits new_content to a topic branch named after the author and page name
     # e.g. "alex.jones/this_page"
     def branch_and_commit!(author, new_content)
       @on_branch = "#{author}/#{name}"
       repo = self.class.repository
       index = repo.index
-      parents = [repo.commit(@on_branch) || repo.commit("master")]
+      parents = [repo.commit(@on_branch) || repo.commit("master")].compact
       index.read_tree(repo.commit(@on_branch) ? @on_branch : "master")
       index.add(name + self.class.extension, new_content)
       index.commit(commit_message(author, true), parents, actor(author), nil, @on_branch)
@@ -293,7 +313,7 @@ module GitWiki
     def merge_and_commit!(author, new_content, other_author)
       repo = self.class.repository
       branch_name = "#{other_author}/#{name}"
-      raise BranchNotFound if !repo.commit(branch_name)
+      raise BranchNotFound unless repo.commit(branch_name) && repo.commit("master")
       index = repo.index
       parents = [repo.commit("master"), repo.commit(branch_name)]
       index.read_tree("master")
@@ -314,8 +334,7 @@ module GitWiki
     
     # Turns an author's username into a Grit::Actor for the purposes of committing
     def actor(author)
-      author_email = self.class.email_domain && "#{author}@#{self.class.email_domain}"
-      author_email ? Grit::Actor.new(author, author_email) : nil
+      author ? Grit::Actor.new(author, author) : nil
     end
 
     # Creates a standardized commit message for each kind of action
