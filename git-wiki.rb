@@ -184,7 +184,8 @@ module GitWiki
     # We could use it to list all pages and their outstanding revisions, though.
     get "/pages" do
       @pages = Page.find_all(&:metadata_hash)
-      liquid :list, :locals => {:pages => @pages, :page => {"name" => "pages"}}
+      for_approval = false
+      liquid :list, :layout => false, :locals => {:pages => @listpages, :page => {"name" => "pages"}}
     end
 
     post "/:page/history" do
@@ -242,7 +243,7 @@ module GitWiki
       # end
       commit_list = nil if commit_list.empty?
       ###
-
+      @page.body.force_encoding("utf-8")
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
           :mdown_examples => GitWiki.mdown_examples, :commit_list => commit_list)
     end
@@ -282,7 +283,7 @@ module GitWiki
       template = @page.metadata["template"]
       template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
       # TODO: make header able to swap login/logout button to back button set in page metadata
-      if params[:format]
+      if params[:format] == 'json'
 		json :page => @page.to_json
       else
 	      liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
