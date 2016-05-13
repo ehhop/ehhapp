@@ -6,6 +6,7 @@ require "yaml"
 require "require_all"
 require "rdiscount"
 require "pp"
+require "json"
 
 require_all "lib/"
 
@@ -182,11 +183,8 @@ module GitWiki
     # NOTE: this route is a holdover from git-wiki and really isn't being used for anything, yet.
     # We could use it to list all pages and their outstanding revisions, though.
     get "/pages" do
-      @listpages = Page.find_all(&:metadata_hash)
-      # @pages = {:dog => "okay"}
-      for_approval = false
-      liquid :list, :layout => false, :locals => {:pages => @listpages, :page => {"name" => "pages"}}
-      # @listpages.inspect
+      @pages = Page.find_all(&:metadata_hash)
+      liquid :list, :locals => {:pages => @pages, :page => {"name" => "pages"}}
     end
 
     post "/:page/history" do
@@ -244,7 +242,7 @@ module GitWiki
       # end
       commit_list = nil if commit_list.empty?
       ###
-      @page.body.force_encoding("utf-8")
+
       liquid :edit, :locals => locals(@page, :page_class => 'editor', :nocache => true,
           :mdown_examples => GitWiki.mdown_examples, :commit_list => commit_list)
     end
@@ -268,7 +266,7 @@ module GitWiki
       raise UploadNotFound.new(filename)
     end
 
-    get "/:page/?:email?" do
+    get "/:page/?:email??:format?" do
       if params[:email]
         # An editor is looking at somebody else's changes to a page
         authorize! "/#{params[:page]}/#{params[:email]}"
@@ -284,7 +282,11 @@ module GitWiki
       template = @page.metadata["template"]
       template = templates.detect{|t| t["name"] == template } ? template.to_sym : :show
       # TODO: make header able to swap login/logout button to back button set in page metadata
-      liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
+      if params[:format]
+		json :page => @page.to_json
+      else
+	      liquid template, :locals => locals(@page, :header => header(@page, :for_approval => for_approval))
+      end
     end
     
     error PageNotFound do
@@ -318,8 +320,8 @@ module GitWiki
       end
       
       # Run the other route (#call instead of #redirect avoids any caching)
-      call env.merge("REQUEST_METHOD"=>"GET", "PATH_INFO" => "/#{@page}") 
+      call env.merge("REQUEST_METHOD"=>"GET", "PATH_INFO" => "/#{@page}")
     end
   end
 end
-   
+

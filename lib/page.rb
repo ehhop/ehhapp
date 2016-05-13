@@ -2,6 +2,7 @@ require "grit"
 require "rdiscount"
 require "lockfile"
 require_relative "core_ext"
+require "json"
 
 module GitWiki
 
@@ -149,6 +150,12 @@ module GitWiki
         end
       rescue NameError; end
       html
+    end
+
+    def to_json
+      # Translate to json
+      json = {:metadata => metadata, :body => body.force_encoding('utf-8').to_json}
+      json
     end
 
     def to_s
